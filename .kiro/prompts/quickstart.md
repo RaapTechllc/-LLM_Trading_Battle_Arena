@@ -24,7 +24,18 @@ Ask only:
 2) Confirm stack (Next.js App Router + Tailwind + Prisma + Playwright)
 3) Confirm DB mode (SQLite local, Neon optional in prod)
 
-## Step 2 — Scaffold commands (output exact commands)
+## Step 2 — Repository hygiene check
+**CRITICAL**: Before scaffolding, verify:
+1. `.gitignore` exists with these entries:
+   - `/node_modules`
+   - `/.next/`
+   - `.env*.local`
+   - `/coverage`
+   - `*.tsbuildinfo`
+2. If `.gitignore` is missing, CREATE IT FIRST before any other commands
+3. If `node_modules/` is already committed, STOP and warn user
+
+## Step 3 — Scaffold commands (output exact commands)
 Provide the exact commands to run, in order.
 Use safe defaults:
 - pnpm
@@ -32,7 +43,7 @@ Use safe defaults:
 - Prisma init
 - Playwright init
 
-## Step 3 — Write baseline docs (repo artifacts)
+## Step 4 — Write baseline docs (repo artifacts)
 Ensure these exist with project-specific content:
 - `.kiro/steering/product.md`
 - `.kiro/steering/tech.md`
@@ -44,13 +55,13 @@ Ensure these exist with project-specific content:
 - `DEVLOG.md` (first entry, UTC)
 - `README.md` (setup + run + env + deploy + demo)
 
-## Step 4 — Minimal working demo (Slice 0)
+## Step 5 — Minimal working demo (Slice 0)
 Create a minimal UI route that:
 - renders disclaimers (paper trading only, educational only, not financial advice)
 - shows a “Create Battle Card” CTA (can be stub)
 - runs without any env vars beyond DATABASE_URL default
 
-## Step 5 — Add Playwright guardrail now
+## Step 6 — Add Playwright guardrail now
 Create a Playwright test that:
 - opens home page
 - verifies disclaimer text is visible

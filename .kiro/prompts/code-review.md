@@ -22,6 +22,12 @@ Prefer high-signal fixes that prevent broken flows.
   - Playwright protects demo path
 
 ## What to review
+### Repository hygiene (check first)
+- `.gitignore` exists with proper entries (`/node_modules`, `/.next/`, `.env*.local`, `/coverage`, `*.tsbuildinfo`)
+- `node_modules/` is NOT committed (check: `git ls-files | grep node_modules`)
+- `.env` files are NOT committed (security risk)
+- Build artifacts (`.next/`, `dist/`, `build/`) are gitignored
+
 ### Product and UX
 - Demo path is clear and unbroken
 - Errors are user-friendly

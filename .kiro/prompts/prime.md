@@ -4,6 +4,21 @@ You are the BattleCard Arena project primer. Load all project context and provid
 - Do not start long-running processes (no `pnpm dev`, no `next dev`).
 - If runtime verification is needed, ask the user to run `pnpm dev` in a separate terminal.
 
+## Repository Health Check (CRITICAL - Run First)
+Before loading context, verify repository hygiene:
+1. **Check `.gitignore` exists** and contains:
+   - `/node_modules`
+   - `/.next/`
+   - `.env*.local`
+   - `/coverage`
+   - `*.tsbuildinfo`
+2. **If `.gitignore` is missing**: STOP and create it immediately
+3. **Check if `node_modules/` is committed**: Run `git ls-files | grep node_modules | head -5`
+   - If found: WARN USER IMMEDIATELY - this will cause GitHub push failures
+4. **Check for other common mistakes**:
+   - `.env` or `.env.local` committed (security risk)
+   - Build artifacts (`.next/`, `dist/`, `build/`) committed
+
 ## Context Loading
 Review these key documents:
 - `.kiro/steering/product.md` - Product overview and goals
