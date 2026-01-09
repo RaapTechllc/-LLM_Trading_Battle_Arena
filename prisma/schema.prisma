@@ -1,0 +1,85 @@
+// LLM Trading Battle Arena Schema
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model TradingModel {
+  id            String   @id @default(cuid())
+  name          String   @unique  // "Grok 4.20"
+  provider      String   // "xAI", "Anthropic", "DeepSeek"
+  description   String?
+  avatar        String?  // Emoji
+  
+  // Lifetime stats
+  totalTrades   Int      @default(0)
+  winCount      Int      @default(0)
+  totalPnlPct   Float    @default(0)
+  
+  tradeCards    TradeCard[]
+  battles1      ModelBattle[] @relation("Model1")
+  battles2      ModelBattle[] @relation("Model2")
+  
+  createdAt     DateTime @default(now())
+
+  @@map("trading_models")
+}
+
+model TradeCard {
+  id          String   @id @default(cuid())
+  
+  // Model info
+  modelId     String
+  model       TradingModel @relation(fields: [modelId], references: [id])
+  
+  // Trade details
+  asset       String   // "BTC", "ETH", "SOL"
+  direction   String   // "LONG", "SHORT"
+  entryPrice  Float
+  exitPrice   Float
+  leverage    Float    @default(1)
+  
+  // Results
+  pnlPercent  Float    // +12.5 or -3.2
+  pnlUsd      Float    // +$1,250 or -$320
+  holdingHours Float   // 4.5 hours
+  
+  // Card metadata
+  rarity      String   // Based on P&L: Common (<2%), Rare (2-5%), Epic (5-10%), Legendary (>10%)
+  
+  // Optional reasoning
+  reasoning   String?  // "RSI oversold + 4H bullish trend"
+  
+  userId      String   @default("demo-user")
+  createdAt   DateTime @default(now())
+
+  @@map("trade_cards")
+}
+
+model ModelBattle {
+  id            String   @id @default(cuid())
+  
+  model1Id      String
+  model2Id      String
+  
+  model1        TradingModel @relation("Model1", fields: [model1Id], references: [id])
+  model2        TradingModel @relation("Model2", fields: [model2Id], references: [id])
+  
+  model1Cards   String   // JSON array of TradeCard IDs
+  model2Cards   String   // JSON array of TradeCard IDs
+  
+  model1Score   Float    // Total P&L %
+  model2Score   Float
+  
+  winnerId      String?
+  
+  createdAt     DateTime @default(now())
+
+  @@map("model_battles")
+}

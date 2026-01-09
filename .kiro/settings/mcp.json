@@ -1,0 +1,24 @@
+{
+  "mcpServers": {
+    "playwright": {
+      "command": "npx",
+      "args": ["@anthropic/mcp-playwright"],
+      "env": {},
+      "autoApprove": [
+        "playwright_navigate",
+        "playwright_screenshot",
+        "playwright_click",
+        "playwright_evaluate"
+      ]
+    },
+    "context7": {
+      "command": "npx",
+      "args": ["-y", "@anthropic/mcp-context7"],
+      "env": {},
+      "autoApprove": [
+        "search_docs",
+        "get_docs"
+      ]
+    }
+  }
+}

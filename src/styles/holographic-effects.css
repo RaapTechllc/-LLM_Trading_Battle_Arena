@@ -1,0 +1,132 @@
+/* Terminal Noir Holographic Card Effects */
+
+.holographic-card {
+  position: relative;
+  transform-style: preserve-3d;
+  transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+  cursor: pointer;
+}
+
+.holographic-card:hover {
+  transform: perspective(1000px) rotateX(2deg) rotateY(-2deg) translateY(-8px);
+}
+
+.holographic-card .foil-shine {
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(45deg,
+      transparent 30%,
+      rgba(255, 255, 255, 0.1) 50%,
+      transparent 70%);
+  transform: translateX(-100%) translateY(-100%) rotate(45deg);
+  transition: transform 0.8s ease;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.holographic-card:hover .foil-shine {
+  transform: translateX(100%) translateY(100%) rotate(45deg);
+}
+
+/* Base card glows */
+.holographic-common {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 20px rgba(100, 116, 139, 0.1);
+}
+
+.holographic-rare {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 30px rgba(59, 130, 246, 0.2);
+}
+
+.holographic-epic {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 40px rgba(168, 85, 247, 0.3);
+}
+
+.holographic-legendary {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 60px rgba(245, 158, 11, 0.4);
+}
+
+/* Legendary Holographic Shift */
+.holographic-legendary::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(125deg,
+      rgba(255, 0, 128, 0.2) 0%,
+      rgba(0, 255, 255, 0.2) 25%,
+      rgba(255, 255, 0, 0.2) 50%,
+      rgba(0, 255, 128, 0.2) 75%,
+      rgba(255, 0, 128, 0.2) 100%);
+  background-size: 400% 400%;
+  animation: holo-shift 8s linear infinite;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  pointer-events: none;
+  border-radius: inherit;
+  z-index: 1;
+  mix-blend-mode: color-dodge;
+}
+
+.holographic-legendary:hover::after {
+  opacity: 1;
+}
+
+/* Epic Prism Effect */
+.holographic-epic::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(45deg,
+      transparent 40%,
+      rgba(168, 85, 247, 0.3) 50%,
+      transparent 60%);
+  background-size: 200% 200%;
+  animation: prism-shift 4s ease infinite;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  pointer-events: none;
+  border-radius: inherit;
+  z-index: 1;
+}
+
+.holographic-epic:hover::after {
+  opacity: 1;
+}
+
+@keyframes holo-shift {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes prism-shift {
+  0% {
+    background-position: -100% -100%;
+  }
+
+  100% {
+    background-position: 200% 200%;
+  }
+}
+
+/* Noise overlay */
+.holographic-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  opacity: 0.03;
+  pointer-events: none;
+  border-radius: inherit;
+  z-index: 2;
+}

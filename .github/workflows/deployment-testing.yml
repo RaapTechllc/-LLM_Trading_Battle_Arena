@@ -1,0 +1,93 @@
+name: Deployment Testing
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  deployment_status:
+
+jobs:
+  test-local:
+    runs-on: ubuntu-latest
+    name: Test Local Build
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Setup database
+      run: |
+        npx prisma generate
+        npx prisma migrate dev --name init
+        npm run db:seed
+    
+    - name: Build application
+      run: npm run build
+    
+    - name: Install Playwright
+      run: npx playwright install --with-deps
+    
+    - name: Run Playwright tests (local)
+      run: npm run test:e2e
+    
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: playwright-report-local
+        path: playwright-report/
+        retention-days: 30
+
+  test-production:
+    runs-on: ubuntu-latest
+    name: Test Production Deployment
+    if: github.event.deployment_status.state == 'success'
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Install Playwright
+      run: npx playwright install --with-deps
+    
+    - name: Run Playwright tests (production)
+      run: npm run test:e2e:production
+      env:
+        PRODUCTION_URL: ${{ github.event.deployment_status.target_url }}
+    
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: playwright-report-production
+        path: playwright-report/
+        retention-days: 30
+    
+    - name: Comment PR with results
+      uses: actions/github-script@v7
+      if: github.event_name == 'pull_request'
+      with:
+        script: |
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: '✅ Production deployment tests passed! 🚀'
+          });
