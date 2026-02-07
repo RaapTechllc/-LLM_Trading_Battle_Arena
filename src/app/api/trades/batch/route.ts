@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { generateTradeDecision, MODEL_MAP } from '@/lib/openrouter'
-import { rateLimit } from '@/lib/rate-limit'
+import { rateLimitAsync } from '@/lib/rate-limit'
 
 export async function POST(request: NextRequest) {
   try {
@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
     // Rate limit accounts for batch size
     const ip = request.headers.get('x-forwarded-for') || 'anonymous'
     for (let i = 0; i < validModels.length; i++) {
-      const { allowed, retryAfter } = rateLimit(ip)
+      const { allowed, retryAfter } = await rateLimitAsync(ip)
       if (!allowed) {
         return NextResponse.json(
           { error: 'Rate limit exceeded', retryAfter },
