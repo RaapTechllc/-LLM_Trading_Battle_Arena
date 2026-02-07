@@ -36,7 +36,7 @@ model TradeCard {
   
   // Model info
   modelId     String
-  model       TradingModel @relation(fields: [modelId], references: [id])
+  model       TradingModel @relation(fields: [modelId], references: [id], onDelete: Cascade)
   
   // Trade details
   asset       String   // "BTC", "ETH", "SOL"
@@ -59,6 +59,11 @@ model TradeCard {
   userId      String   @default("demo-user")
   createdAt   DateTime @default(now())
 
+  // Indexes for common queries
+  @@index([modelId])
+  @@index([userId])
+  @@index([createdAt])
+  @@index([rarity])
   @@map("trade_cards")
 }
 
@@ -68,8 +73,8 @@ model ModelBattle {
   model1Id      String
   model2Id      String
   
-  model1        TradingModel @relation("Model1", fields: [model1Id], references: [id])
-  model2        TradingModel @relation("Model2", fields: [model2Id], references: [id])
+  model1        TradingModel @relation("Model1", fields: [model1Id], references: [id], onDelete: Cascade)
+  model2        TradingModel @relation("Model2", fields: [model2Id], references: [id], onDelete: Cascade)
   
   model1Cards   String   // JSON array of TradeCard IDs
   model2Cards   String   // JSON array of TradeCard IDs
@@ -81,5 +86,10 @@ model ModelBattle {
   
   createdAt     DateTime @default(now())
 
+  // Indexes for common queries
+  @@index([model1Id])
+  @@index([model2Id])
+  @@index([winnerId])
+  @@index([createdAt])
   @@map("model_battles")
 }
