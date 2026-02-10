@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import FearGreedGauge from '@/components/FearGreedGauge'
 import LivePriceTicker from '@/components/LivePriceTicker'
 import { StatCard } from '@/components/ui/StatCard'
 import AutoTradeButton from '@/components/AutoTradeButton'
@@ -200,6 +201,7 @@ export default function HomePage() {
 
         {/* Side Actions - Enhanced Brutalist Cards */}
         <section className="col-span-12 lg:col-span-4 flex flex-col gap-6">
+          <FearGreedGauge />
           <div className="terminal-card bg-gradient-to-br from-void-mid via-void-deep to-void-mid border-2 border-neon-profit/20 p-10 flex flex-col items-center text-center relative overflow-hidden group hover:border-neon-profit/40 transition-all duration-500">
             {/* Animated gradient background */}
             <div className="absolute inset-0 bg-gradient-to-br from-neon-profit/10 via-transparent to-neon-warning/10 opacity-0 group-hover:opacity-100 transition-all duration-700"></div>

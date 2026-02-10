@@ -12,9 +12,16 @@ export const ASSETS = [
   { symbol: "BTC", name: "Bitcoin", color: "#f7931a" },
   { symbol: "ETH", name: "Ethereum", color: "#627eea" },
   { symbol: "SOL", name: "Solana", color: "#9945ff" },
-  { symbol: "PLTR", name: "Palantir", color: "#0066cc" },
-  { symbol: "TSLA", name: "Tesla", color: "#cc0000" },
+  { symbol: "AVAX", name: "Avalanche", color: "#e84142" },
+  { symbol: "DOGE", name: "Dogecoin", color: "#c2a633" },
   { symbol: "NVDA", name: "NVIDIA", color: "#76b900" },
+  { symbol: "TSLA", name: "Tesla", color: "#cc0000" },
+  { symbol: "AAPL", name: "Apple", color: "#555555" },
+  { symbol: "MSFT", name: "Microsoft", color: "#00a4ef" },
+  { symbol: "GOOGL", name: "Alphabet", color: "#4285f4" },
+  { symbol: "META", name: "Meta", color: "#1877f2" },
+  { symbol: "AMZN", name: "Amazon", color: "#ff9900" },
+  { symbol: "PLTR", name: "Palantir", color: "#0066cc" },
 ] as const;
 
 export const DIRECTIONS = ["LONG", "SHORT"] as const;
