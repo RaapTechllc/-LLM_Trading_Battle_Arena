@@ -1,7 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { getServerSession } from '@/lib/auth'
 
 export async function POST(request: NextRequest) {
+  // Auth check (Phase 1)
+  const session = await getServerSession()
+  if (!session?.user?.id) {
+    return NextResponse.json(
+      { error: 'Unauthorized - Please sign in' },
+      { status: 401 }
+    )
+  }
+
   try {
     const body = await request.json()
     const {
@@ -63,6 +73,7 @@ export async function POST(request: NextRequest) {
     const tradeCard = await prisma.tradeCard.create({
       data: {
         modelId: model.id,
+        userId: session.user.id, // Added in Phase 1
         asset,
         direction,
         entryPrice,

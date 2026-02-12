@@ -20,8 +20,10 @@
     "demo:rehearsal": "./scripts/performance-test.sh 100"
   },
   "dependencies": {
+    "@auth/prisma-adapter": "^2.11.1",
     "@prisma/client": "^5.22.0",
     "next": "^15.5.12",
+    "next-auth": "^5.0.0-beta.30",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "uuid": "^13.0.0"

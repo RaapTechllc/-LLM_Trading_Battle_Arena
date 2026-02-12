@@ -1,21 +1,188 @@
-// LLM Trading Battle Arena Schema
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// LLM Trading Battle Arena Schema - Production
+// PostgreSQL migration from SQLite prototype
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
+
+// ============================================================================
+// AUTH MODELS (NextAuth.js)
+// ============================================================================
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  image         String?
+  emailVerified DateTime?
+
+  accounts      Account[]
+  sessions      Session[]
+  positions     Position[]
+  orders        Order[]
+  balance       AccountBalance?
+  tradeCards    TradeCard[]
+  battles       ModelBattle[]
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+// ============================================================================
+// ACCOUNT & TRADING MODELS
+// ============================================================================
+
+model AccountBalance {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  cashBalance   Decimal  @default(10000) @db.Decimal(15, 2)  // Starting paper capital
+  equityValue   Decimal  @default(10000) @db.Decimal(15, 2)
+  buyingPower   Decimal  @default(10000) @db.Decimal(15, 2)
+  totalPnl      Decimal  @default(0) @db.Decimal(15, 2)
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("account_balances")
+}
+
+model Position {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  symbol        String
+  side          String   // LONG | SHORT
+  quantity      Decimal  @db.Decimal(15, 8)
+  avgEntryPrice Decimal  @db.Decimal(15, 8)
+  currentPrice  Decimal  @default(0) @db.Decimal(15, 8)
+  unrealizedPnl Decimal  @default(0) @db.Decimal(15, 2)
+  realizedPnl   Decimal  @default(0) @db.Decimal(15, 2)
+  status        String   // OPEN | CLOSED
+
+  openedAt      DateTime @default(now())
+  closedAt      DateTime?
+
+  orders        Order[]
+  modelId       String?
+  model         TradingModel? @relation(fields: [modelId], references: [id])
+
+  @@index([userId, status])
+  @@index([symbol])
+  @@map("positions")
+}
+
+model Order {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  positionId      String?
+  position        Position? @relation(fields: [positionId], references: [id])
+
+  symbol          String
+  side            String   // BUY | SELL
+  orderType       String   // MARKET | LIMIT | STOP
+  quantity        Decimal  @db.Decimal(15, 8)
+  limitPrice      Decimal? @db.Decimal(15, 8)
+  filledPrice     Decimal? @db.Decimal(15, 8)
+  status          String   // PENDING | FILLED | CANCELLED | REJECTED
+
+  brokerOrderId   String?  @unique
+  rejectionReason String?
+
+  submittedAt     DateTime @default(now())
+  filledAt        DateTime?
+
+  @@index([userId, status])
+  @@index([brokerOrderId])
+  @@map("orders")
+}
+
+model RiskEvent {
+  id          String   @id @default(cuid())
+  userId      String
+  eventType   String   // POSITION_LIMIT | DAILY_LOSS | MARGIN_CALL | CIRCUIT_BREAKER
+  severity    String   // WARNING | HALT | LIQUIDATION
+  details     Json
+  createdAt   DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@map("risk_events")
+}
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  userId      String?
+  action      String   // ORDER_SUBMIT | ORDER_FILL | POSITION_OPEN | POSITION_CLOSE | LOGIN | etc.
+  entityType  String   // order | position | user | battle
+  entityId    String
+  details     Json
+  ipAddress   String?
+  createdAt   DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([entityType, entityId])
+  @@map("audit_logs")
+}
+
+// ============================================================================
+// EXISTING MODELS (UPGRADED WITH userId)
+// ============================================================================
 
 model TradingModel {
   id            String   @id @default(cuid())
-  name          String   @unique  // "Grok 4.20"
-  provider      String   // "xAI", "Anthropic", "DeepSeek"
+  name          String   @unique
+  provider      String
   description   String?
-  avatar        String?  // Emoji
+  avatar        String?
   
   // Lifetime stats
   totalTrades   Int      @default(0)
@@ -25,6 +192,7 @@ model TradingModel {
   tradeCards    TradeCard[]
   battles1      ModelBattle[] @relation("Model1")
   battles2      ModelBattle[] @relation("Model2")
+  positions     Position[]     // New: tracks which model suggested trades
   
   createdAt     DateTime @default(now())
 
@@ -39,27 +207,29 @@ model TradeCard {
   model       TradingModel @relation(fields: [modelId], references: [id], onDelete: Cascade)
   
   // Trade details
-  asset       String   // "BTC", "ETH", "SOL"
+  asset       String
   direction   String   // "LONG", "SHORT"
   entryPrice  Float
   exitPrice   Float
   leverage    Float    @default(1)
   
   // Results
-  pnlPercent  Float    // +12.5 or -3.2
-  pnlUsd      Float    // +$1,250 or -$320
-  holdingHours Float   // 4.5 hours
+  pnlPercent  Float
+  pnlUsd      Float
+  holdingHours Float
   
   // Card metadata
-  rarity      String   // Based on P&L: Common (<2%), Rare (2-5%), Epic (5-10%), Legendary (>10%)
+  rarity      String
   
   // Optional reasoning
-  reasoning   String?  // "RSI oversold + 4H bullish trend"
+  reasoning   String?
   
-  userId      String   @default("demo-user")
+  // User ownership (optional — null for system-seeded cards)
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
   createdAt   DateTime @default(now())
 
-  // Indexes for common queries
   @@index([modelId])
   @@index([userId])
   @@index([createdAt])
@@ -79,17 +249,21 @@ model ModelBattle {
   model1Cards   String   // JSON array of TradeCard IDs
   model2Cards   String   // JSON array of TradeCard IDs
   
-  model1Score   Float    // Total P&L %
+  model1Score   Float
   model2Score   Float
   
   winnerId      String?
   
+  // User ownership (optional — null for system-seeded battles)
+  userId        String?
+  user          User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
   createdAt     DateTime @default(now())
 
-  // Indexes for common queries
   @@index([model1Id])
   @@index([model2Id])
   @@index([winnerId])
+  @@index([userId])
   @@index([createdAt])
   @@map("model_battles")
 }
