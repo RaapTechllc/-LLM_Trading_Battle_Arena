@@ -280,7 +280,7 @@ model ArenaAgent {
   modelProvider    String              // anthropic, openai-codex, minimax, etc.
   modelId          String              // claude-opus-4-6, gpt-5.3-codex, etc.
   executionPath    String              // "openclaw" or "direct"
-  sessionKey       String?             // OpenClaw session key (Path A only)
+  // sessionKey intentionally omitted — stored in ~/.secrets/arena/ only (TopG blocker 1)
   strategyPrompt   String   @db.Text  // Injected system prompt at trade time
   agentMd          String?  @db.Text  // Full AGENT.md content
   riskMaxExposure  Float    @default(0.50)
@@ -288,6 +288,7 @@ model ArenaAgent {
   riskMaxPositions Int      @default(3)
   riskStopLossReq  Boolean  @default(true)
   isActive         Boolean  @default(true)
+  haltedUntil      DateTime?           // per-agent halt on drawdown breach (TopG note 3)
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
