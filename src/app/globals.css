@@ -2,173 +2,319 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Clean font system - Inter for everything */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap');
 
+/* ─── ATLAS DESIGN SYSTEM — Tron × Tesla × SpaceX ─── */
 :root {
-  /* nof1.ai inspired palette */
-  --bg-primary: #0a0a0a;
-  --bg-card: #141414;
-  --bg-hover: #1a1a1a;
-  --border-subtle: #262626;
-  --border-hover: #404040;
-  
-  /* Text */
-  --text-primary: #ffffff;
-  --text-secondary: #a1a1aa;
-  --text-muted: #71717a;
-  
-  /* Signals */
-  --profit: #22c55e;
-  --profit-dim: #16a34a;
-  --loss: #ef4444;
-  --loss-dim: #dc2626;
-  --neutral: #3b82f6;
-  
-  /* Model identity colors */
-  --model-grok: #ff6b2b;
-  --model-claude: #d4a574;
-  --model-deepseek: #00d4ff;
-  --model-qwen: #a855f7;
-  --model-gpt: #10b981;
-  --model-gemini: #3b82f6;
+  /* Void Layer */
+  --void-abyss:    #020204;
+  --void-deep:     #050508;
+  --void-surface:  #0a0a10;
+
+  /* Grid Layer */
+  --grid-dim:      #0d1117;
+  --grid-line:     #1a1f2e;
+  --grid-glow:     #2a3040;
+
+  /* Signal Layer */
+  --signal-cyan:   #00d4ff;
+  --signal-white:  #e0e6f0;
+  --signal-mute:   #5a6580;
+
+  /* Outcome Layer */
+  --profit-green:  #00ff88;
+  --loss-red:      #ff2240;
+  --neutral-amber: #ffa500;
+
+  /* Legacy aliases (keep for components not yet migrated) */
+  --bg-primary:    var(--void-abyss);
+  --bg-card:       var(--void-deep);
+  --bg-hover:      var(--void-surface);
+  --border-subtle: var(--grid-line);
+  --border-hover:  var(--grid-glow);
+  --text-primary:  var(--signal-white);
+  --text-secondary: var(--signal-mute);
+  --text-muted:    #3a4055;
+  --cyan:          var(--signal-cyan);
+  --profit:        var(--profit-green);
+  --loss:          var(--loss-red);
 }
 
-* {
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
-}
-
-html,
-body {
+/* ─── RESET ─── */
+* { box-sizing: border-box; padding: 0; margin: 0; }
+html, body {
   max-width: 100vw;
   overflow-x: hidden;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background: var(--bg-primary);
-  color: var(--text-primary);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--void-abyss);
+  color: var(--signal-white);
 }
 
-/* Utility classes */
-.text-profit { color: var(--profit); }
-.text-loss { color: var(--loss); }
-.text-muted { color: var(--text-muted); }
-.text-secondary { color: var(--text-secondary); }
+/* ─── GRID BACKGROUND ─── */
+.grid-bg {
+  background-color: var(--void-abyss);
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 59px,
+      rgba(0,212,255,0.035) 59px,
+      rgba(0,212,255,0.035) 60px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 59px,
+      rgba(0,212,255,0.035) 59px,
+      rgba(0,212,255,0.035) 60px
+    );
+}
 
-.bg-card { background: var(--bg-card); }
-.border-subtle { border-color: var(--border-subtle); }
+/* ─── SCANLINE ─── */
+.scanline::before {
+  content: '';
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 3px,
+    rgba(0,0,0,0.03) 3px,
+    rgba(0,0,0,0.03) 4px
+  );
+  pointer-events: none;
+  z-index: 9998;
+}
 
-/* Card component */
+/* ─── NAV ─── */
+.nav-link {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--signal-mute);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+.nav-link:hover { color: var(--signal-cyan); }
+
+/* ─── CARDS ─── */
 .card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-subtle);
-  border-radius: 12px;
+  background: var(--void-deep);
+  border: 1px solid var(--grid-line);
+  border-radius: 0;
   padding: 1.5rem;
   transition: border-color 0.2s ease;
 }
+.card:hover { border-color: var(--signal-cyan); }
 
-.card:hover {
-  border-color: var(--border-hover);
-}
-
-/* Responsive grid */
-.model-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 1rem;
-}
-
-@media (max-width: 640px) {
-  .model-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* Stats row */
-.stats-row {
-  display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-@media (max-width: 640px) {
-  .stats-row {
-    flex-direction: column;
-  }
-}
-
-/* Table styling */
-.data-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.data-table th,
-.data-table td {
-  padding: 0.75rem 1rem;
-  text-align: left;
-  border-bottom: 1px solid var(--border-subtle);
-}
-
-.data-table th {
-  color: var(--text-muted);
-  font-weight: 500;
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.data-table tr:hover {
-  background: var(--bg-hover);
-}
-
-/* Mobile table scroll */
-@media (max-width: 640px) {
-  .table-container {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-}
-
-/* Navigation */
-.nav-link {
-  color: var(--text-secondary);
-  font-size: 0.875rem;
-  font-weight: 500;
-  transition: color 0.2s ease;
-}
-
-.nav-link:hover {
-  color: var(--text-primary);
-}
-
-/* Buttons */
-.btn-primary {
-  background: var(--text-primary);
-  color: var(--bg-primary);
-  font-weight: 600;
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
-  border: none;
+/* ─── TRADE CARD — Atlas spec ─── */
+.trade-card {
+  background: var(--void-deep);
+  border: 1px solid var(--grid-line);
+  border-radius: 0;
+  padding: 1.25rem;
   cursor: pointer;
-  transition: opacity 0.2s ease;
+  transition: border-color 0.2s ease;
+  position: relative;
+}
+.trade-card:hover { border-color: var(--signal-cyan); }
+.trade-card.profit { border-left: 2px solid var(--profit-green); }
+.trade-card.loss   { border-left: 2px solid var(--loss-red); }
+
+/* ─── MODEL AVATAR TAG ─── */
+.model-tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 0.2rem 0.35rem;
+  border: 1px solid var(--grid-glow);
+  color: var(--signal-cyan);
+  background: rgba(0,212,255,0.06);
+  border-radius: 0;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
 
+/* ─── LABEL ─── */
+.label-mono {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.625rem;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--signal-mute);
+}
+
+/* ─── DATA VALUE ─── */
+.data-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ─── WIN RATE BAR ─── */
+.win-bar-track {
+  height: 3px;
+  background: var(--grid-line);
+  border-radius: 0;
+  overflow: hidden;
+}
+.win-bar-fill {
+  height: 100%;
+  background: var(--profit-green);
+  transition: width 0.3s ease;
+}
+
+/* ─── PROFIT / LOSS TEXT ─── */
+.text-profit  { color: var(--profit-green); }
+.text-loss    { color: var(--loss-red); }
+.text-cyan    { color: var(--signal-cyan); }
+.text-muted   { color: var(--signal-mute); }
+.text-secondary { color: var(--signal-mute); }
+
+/* ─── BUTTONS — sharp, no radius ─── */
+.btn-primary {
+  background: transparent;
+  color: var(--signal-cyan);
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 0.6875rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  padding: 0.75rem 2rem;
+  border: 1px solid var(--signal-cyan);
+  border-radius: 0;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  transition: background 0.15s ease, color 0.15s ease;
+}
 .btn-primary:hover {
-  opacity: 0.9;
+  background: var(--signal-cyan);
+  color: var(--void-abyss);
 }
 
 .btn-secondary {
   background: transparent;
-  color: var(--text-primary);
-  font-weight: 500;
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
-  border: 1px solid var(--border-subtle);
+  color: var(--signal-mute);
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 0.6875rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  padding: 0.75rem 2rem;
+  border: 1px solid var(--grid-line);
+  border-radius: 0;
   cursor: pointer;
-  transition: border-color 0.2s ease;
+  text-decoration: none;
+  display: inline-block;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+.btn-secondary:hover {
+  border-color: var(--grid-glow);
+  color: var(--signal-white);
 }
 
-.btn-secondary:hover {
-  border-color: var(--border-hover);
+/* ─── LIVE INDICATOR ─── */
+@keyframes live-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.3; }
 }
+.live-dot {
+  display: inline-block;
+  width: 6px; height: 6px;
+  background: var(--profit-green);
+  border-radius: 50%;
+  animation: live-pulse 2s ease-in-out infinite;
+}
+
+/* ─── RARITY ACCENT ─── */
+.rarity-legendary { border-top: 2px solid #ffa500; }
+.rarity-epic      { border-top: 2px solid #a855f7; }
+.rarity-rare      { border-top: 2px solid var(--signal-cyan); }
+.rarity-common    {} /* no accent */
+
+/* ─── TABLES ─── */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'JetBrains Mono', monospace;
+}
+.data-table th {
+  font-size: 0.625rem;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--signal-mute);
+  padding: 0.625rem 1rem;
+  border-bottom: 1px solid var(--grid-line);
+  text-align: left;
+}
+.data-table td {
+  font-size: 0.8125rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--grid-dim);
+  vertical-align: middle;
+}
+.data-table tr:first-child td { border-left: 2px solid var(--signal-cyan); }
+.data-table tr:hover td { background: var(--void-surface); }
+
+/* ─── LAYOUT ─── */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 1.5rem;
+  padding: 2rem;
+  max-width: 1440px;
+  margin: 0 auto;
+}
+@media (max-width: 1024px) {
+  .dashboard-grid { grid-template-columns: repeat(6, 1fr); padding: 1.5rem; gap: 1rem; }
+}
+@media (max-width: 640px) {
+  .dashboard-grid { grid-template-columns: 1fr; padding: 1rem; gap: 1rem; }
+}
+
+.hero-stats {
+  grid-column: span 12;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1px;  /* Atlas spec: gap = grid line width */
+  background: var(--grid-line);
+  border: 1px solid var(--grid-line);
+}
+.hero-stats > * { background: var(--void-deep); }
+
+.model-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1px;
+  background: var(--grid-line);
+}
+.model-grid > * { background: var(--void-deep); }
+
+@media (max-width: 640px) {
+  .model-grid { grid-template-columns: 1fr; }
+  .hero-stats { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ─── LOADING SKELETON ─── */
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, var(--grid-dim) 25%, var(--grid-line) 50%, var(--grid-dim) 75%);
+  background-size: 400px 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+/* ─── BG ALIASES (Tailwind compat) ─── */
+.bg-card      { background: var(--void-deep); }
+.border-subtle { border-color: var(--grid-line); }
+.stats-row    { display: flex; gap: 1rem; flex-wrap: wrap; }

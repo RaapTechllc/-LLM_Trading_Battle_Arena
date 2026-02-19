@@ -1,12 +1,20 @@
 // OpenRouter LLM Integration for AI Trading Decisions
 
 export const MODEL_MAP: Record<string, string> = {
-  "Grok 4.20": "x-ai/grok-beta",
-  "Claude Sonnet": "anthropic/claude-3.5-sonnet",
-  "DeepSeek V3": "deepseek/deepseek-chat",
-  "Qwen 3 Max": "qwen/qwen-2.5-72b-instruct",
-  "GPT-5": "openai/gpt-4o",
-  "Gemini 3": "google/gemini-pro-1.5",
+  // Anthropic — 4.6 models (sonnet-4-6, opus-4-6)
+  "Claude Sonnet 4.6": "anthropic/claude-sonnet-4-6",
+  "Claude Opus 4.6":   "anthropic/claude-opus-4-6",
+  "Claude Sonnet":     "anthropic/claude-3.5-sonnet",
+  // xAI — Grok 420 not on API yet; using Grok 3
+  "Grok 3":            "x-ai/grok-3",
+  // OpenAI
+  "GPT-4o":            "openai/gpt-4o",
+  // Google
+  "Gemini 2.0 Flash":  "google/gemini-2.0-flash-001",
+  // DeepSeek
+  "DeepSeek V3":       "deepseek/deepseek-chat",
+  // Qwen
+  "Qwen 3 Max":        "qwen/qwen-2.5-72b-instruct",
 }
 
 export interface TradeDecision {
@@ -84,7 +92,6 @@ Consider: market momentum, volatility, risk/reward ratio. Be decisive.`
     throw new Error("No response from model")
   }
 
-  // Parse JSON from response (handle markdown code blocks)
   const jsonMatch = content.match(/\{[\s\S]*\}/)
   if (!jsonMatch) {
     throw new Error("Could not parse trade decision")
@@ -92,7 +99,6 @@ Consider: market momentum, volatility, risk/reward ratio. Be decisive.`
 
   const decision = JSON.parse(jsonMatch[0]) as TradeDecision
 
-  // Validate and clamp values
   return {
     direction: decision.direction === "SHORT" ? "SHORT" : "LONG",
     leverage: Math.min(Math.max(Math.round(decision.leverage), 1), 20),
