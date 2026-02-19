@@ -10,7 +10,7 @@ export const ACHIEVEMENTS = [
     id: 'first-card',
     name: 'Card Creator',
     description: 'Create your first battle card',
-    icon: '🎨',
+    icon: 'ART',
     category: ACHIEVEMENT_CATEGORIES.CREATOR,
     requirement: 1
   },
@@ -18,7 +18,7 @@ export const ACHIEVEMENTS = [
     id: 'card-master',
     name: 'Card Master',
     description: 'Create 10 battle cards',
-    icon: '🏆',
+    icon: 'WIN',
     category: ACHIEVEMENT_CATEGORIES.CREATOR,
     requirement: 10
   },
@@ -26,7 +26,7 @@ export const ACHIEVEMENTS = [
     id: 'first-victory',
     name: 'First Victory',
     description: 'Win your first battle',
-    icon: '⚔️',
+    icon: 'ATK',
     category: ACHIEVEMENT_CATEGORIES.WARRIOR,
     requirement: 1
   },
@@ -34,7 +34,7 @@ export const ACHIEVEMENTS = [
     id: 'battle-veteran',
     name: 'Battle Veteran',
     description: 'Win 5 battles',
-    icon: '🛡️',
+    icon: 'DEF',
     category: ACHIEVEMENT_CATEGORIES.WARRIOR,
     requirement: 5
   },
@@ -42,7 +42,7 @@ export const ACHIEVEMENTS = [
     id: 'champion',
     name: 'Champion',
     description: 'Win 10 battles',
-    icon: '👑',
+    icon: 'CHM',
     category: ACHIEVEMENT_CATEGORIES.WARRIOR,
     requirement: 10
   },
@@ -58,7 +58,7 @@ export const ACHIEVEMENTS = [
     id: 'rare-collector',
     name: 'Rare Collector',
     description: 'Own cards of all rarities',
-    icon: '💎',
+    icon: 'LGD',
     category: ACHIEVEMENT_CATEGORIES.COLLECTOR,
     requirement: 4 // Common, Rare, Epic, Legendary
   },

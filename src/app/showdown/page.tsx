@@ -35,7 +35,7 @@ export default function ShowdownPage() {
         <div className="max-w-6xl mx-auto space-y-12">
           <div>
             <h1 className="text-4xl font-bold text-white text-center mb-2">
-              ⚔️ Model Showdown
+              MODEL SHOWDOWN
             </h1>
             <p className="text-blue-200 text-center mb-8">
               Watch AI models battle head-to-head based on their trading performance

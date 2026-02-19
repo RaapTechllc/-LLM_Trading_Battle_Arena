@@ -87,7 +87,7 @@ export default function LiveShowdown() {
       <div className="space-y-8 animate-fade-in">
         <div className="text-center">
           <div className="text-[10px] font-bold text-tertiary tracking-[0.3em] uppercase mb-4">
-            ⚡ LIVE BATTLE COMPLETE ⚡
+            LIVE BATTLE COMPLETE
           </div>
           <div className="text-secondary text-sm mb-2">
             {result.asset} moved {result.marketMove}% → ${result.finalPrice.toFixed(2)}
@@ -103,7 +103,7 @@ export default function LiveShowdown() {
                   <span className="text-4xl">{getModelAvatar(m.name)}</span>
                   <div>
                     <div className="font-bold text-white">{m.name}</div>
-                    {isWinner && <div className="text-[10px] text-neon-profit font-bold">🏆 WINNER</div>}
+                    {isWinner && <div className="text-[10px] text-neon-profit font-bold">WINNER</div>}
                   </div>
                 </div>
                 <div className="space-y-2 text-sm">
@@ -148,7 +148,7 @@ export default function LiveShowdown() {
   return (
     <div className="terminal-card p-8 max-w-2xl mx-auto">
       <div className="text-center mb-8">
-        <h2 className="text-xl font-black tracking-widest text-white uppercase mb-2">⚡ LIVE AI BATTLE</h2>
+        <h2 className="text-xl font-black tracking-widest text-white uppercase mb-2">LIVE AI BATTLE</h2>
         <p className="text-[10px] text-tertiary tracking-widest uppercase">Real-time trade generation via OpenRouter</p>
       </div>
 
@@ -159,7 +159,7 @@ export default function LiveShowdown() {
               <div className="text-5xl animate-pulse">{getModelAvatar(model1)}</div>
               <div className="text-[10px] text-secondary mt-2">ANALYZING...</div>
             </div>
-            <div className="text-3xl text-white/20 self-center">⚔️</div>
+            <div className="label-mono" style={{opacity:0.2,fontSize:"1.5rem"}}>VS</div>
             <div className="text-center">
               <div className="text-5xl animate-pulse">{getModelAvatar(model2)}</div>
               <div className="text-[10px] text-secondary mt-2">ANALYZING...</div>
@@ -205,7 +205,7 @@ export default function LiveShowdown() {
 
           <button onClick={startBattle} disabled={isLoading || !model1 || !model2}
             className="w-full py-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-black tracking-widest uppercase rounded-full hover:scale-105 transition-all disabled:opacity-50">
-            ⚡ START LIVE BATTLE
+            START LIVE BATTLE
           </button>
         </div>
       )}

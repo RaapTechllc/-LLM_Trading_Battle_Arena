@@ -168,7 +168,7 @@ export default function DeckBuilderPage() {
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-7xl mx-auto">
           <h1 className="text-4xl font-bold text-white text-center mb-8">
-            🃏 Deck Builder
+            DECK BUILDER
           </h1>
 
           {/* Educational Disclaimer */}
@@ -258,7 +258,7 @@ export default function DeckBuilderPage() {
                           {card.manaCost}
                         </div>
                         <div className="flex items-center gap-1">
-                          {card.isFavorite && <span className="text-yellow-400 text-xs">⭐</span>}
+                          {card.isFavorite && <span className="label-mono" style={{color:"var(--neutral-amber)"}}>FAV</span>}
                           <div className="text-xs text-gray-400 uppercase">{card.rarity}</div>
                         </div>
                       </div>
@@ -275,9 +275,9 @@ export default function DeckBuilderPage() {
                       </div>
 
                       <div className="flex justify-between text-xs">
-                        <span className="text-red-400">⚔️ {card.attack}</span>
-                        <span className="text-blue-400">🛡️ {card.defense}</span>
-                        <span className="text-green-400">❤️ {card.health}</span>
+                        <span className="label-mono" style={{color:"var(--loss-red)"}}>ATK {card.attack}</span>
+                        <span className="label-mono" style={{color:"var(--signal-cyan)"}}>DEF {card.defense}</span>
+                        <span className="label-mono" style={{color:"var(--profit-green)"}}>HP {card.health}</span>
                       </div>
 
                       {selectedCards.includes(card.id) && (

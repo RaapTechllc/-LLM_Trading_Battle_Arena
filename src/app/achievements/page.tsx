@@ -90,7 +90,7 @@ export default function AchievementsPage() {
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-white mb-4">🏆 Achievements</h1>
+          <h1 className="text-4xl font-bold text-white mb-4">ACHIEVEMENTS</h1>
           <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 inline-block">
             <div className="text-2xl font-bold text-white">
               {unlockedCount} / {totalCount}

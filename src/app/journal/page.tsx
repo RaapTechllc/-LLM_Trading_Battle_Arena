@@ -33,7 +33,7 @@ export default function JournalPage() {
 
         <div className="max-w-7xl mx-auto">
           <h1 className="text-4xl font-bold text-white text-center mb-2">
-            🃏 Trade Journal
+            TRADE JOURNAL
           </h1>
           <p className="text-blue-200 text-center mb-8">
             Browse AI model trading performance cards with holographic rarity effects

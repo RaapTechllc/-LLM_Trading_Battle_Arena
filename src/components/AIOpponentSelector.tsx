@@ -45,11 +45,11 @@ export default function AIOpponentSelector({ onSelect, selectedOpponent }: AIOpp
 
   const getStrategyIcon = (strategy: string) => {
     switch (strategy) {
-      case 'AGGRESSIVE': return '⚔️';
-      case 'DEFENSIVE': return '🛡️';
-      case 'BALANCED': return '⚖️';
-      case 'RARITY': return '💎';
-      default: return '🎯';
+      case 'AGGRESSIVE': return '[ATK]';
+      case 'DEFENSIVE': return '[DEF]';
+      case 'BALANCED': return '[BAL]';
+      case 'RARITY': return '[LGD]';
+      default: return '[RND]';
     }
   };
 

@@ -46,7 +46,7 @@ export default function AutoTradeButton() {
       >
         {isRunning ? (
           <span className="flex items-center gap-2">
-            <span className="animate-spin">⚡</span> AI MODELS TRADING...
+            AI MODELS TRADING...
           </span>
         ) : (
           '🤖 RUN AI TRADING ROUND'

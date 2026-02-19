@@ -33,7 +33,7 @@ export default function AchievementNotification({ achievementIds, onClose }: Ach
     }`}>
       <div className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white p-4 rounded-lg shadow-lg max-w-sm">
         <div className="flex items-center justify-between mb-2">
-          <h3 className="font-bold text-lg">🏆 Achievement Unlocked!</h3>
+          <h3 className="font-bold text-lg">ACHIEVEMENT UNLOCKED</h3>
           <button 
             onClick={() => {
               setVisible(false);

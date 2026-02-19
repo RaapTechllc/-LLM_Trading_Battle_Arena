@@ -1,12 +1,12 @@
 // LLM Trading Battle Arena Constants
 
 export const TRADING_MODELS = [
-  { name: "Grok 4.20", provider: "xAI", avatar: "🚀", description: "Real-time social sentiment analysis" },
-  { name: "Claude Sonnet", provider: "Anthropic", avatar: "🎭", description: "Constitutional AI trading approach" },
-  { name: "DeepSeek V3", provider: "DeepSeek", avatar: "🔮", description: "Deep reasoning for market analysis" },
-  { name: "Qwen 3 Max", provider: "Alibaba", avatar: "⚡", description: "Multi-modal market intelligence" },
-  { name: "GPT-5", provider: "OpenAI", avatar: "🧠", description: "Advanced reasoning and prediction" },
-  { name: "Gemini 3", provider: "Google", avatar: "💎", description: "Multimodal market analysis" },
+  { name: "Grok 4.20", provider: "xAI", avatar: "GRK", description: "Real-time social sentiment analysis" },
+  { name: "Claude Sonnet", provider: "Anthropic", avatar: "S3.5", description: "Constitutional AI trading approach" },
+  { name: "DeepSeek V3", provider: "DeepSeek", avatar: "DSK", description: "Deep reasoning for market analysis" },
+  { name: "Qwen 3 Max", provider: "Alibaba", avatar: "QWN", description: "Multi-modal market intelligence" },
+  { name: "GPT-5", provider: "OpenAI", avatar: "GPT", description: "Advanced reasoning and prediction" },
+  { name: "Gemini 3", provider: "Google", avatar: "GEM", description: "Multimodal market analysis" },
 ] as const;
 
 export const ASSETS = [

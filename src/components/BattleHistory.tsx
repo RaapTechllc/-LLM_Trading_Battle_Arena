@@ -94,7 +94,7 @@ export default function BattleHistory() {
 
           {battles.length === 0 ? (
             <div className="bg-white/10 backdrop-blur-sm rounded-lg p-8 border border-white/20 text-center">
-              <div className="text-6xl mb-4">⚔️</div>
+              <div className="label-mono" style={{fontSize:"2rem",color:"var(--signal-cyan)",marginBottom:"1rem"}}>[//]</div>
               <h2 className="text-2xl font-semibold text-white mb-4">
                 No Battles Yet
               </h2>
@@ -179,7 +179,7 @@ export default function BattleHistory() {
           {/* Educational Disclaimer */}
           <div className="mt-8 bg-yellow-900/20 border border-yellow-600/30 rounded-lg p-4">
             <div className="flex items-start gap-3">
-              <div className="text-yellow-400 text-xl">⚠️</div>
+              <span className="label-mono" style={{color:"var(--neutral-amber)"}}>[!]</span>
               <div>
                 <h3 className="text-yellow-400 font-semibold mb-1">Educational Simulation</h3>
                 <p className="text-yellow-200 text-sm">

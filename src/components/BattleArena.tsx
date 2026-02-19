@@ -130,7 +130,7 @@ export default function BattleArena() {
     
     const opponentName = selectedOpponent ? selectedOpponent.name : 'Random AI'
     const deckInfo = activeDeck ? ` using deck "${activeDeck.name}"` : '';
-    setBattleLog(['⚔️ Battle begins!', `🎯 Facing: ${opponentName}${deckInfo}`, 'Calculating card powers...'])
+    setBattleLog(['BATTLE INITIATED', `TARGET: ${opponentName}${deckInfo}`, 'Calculating card powers...'])
     
     try {
       const response = await fetch('/api/battle', {
@@ -154,14 +154,14 @@ export default function BattleArena() {
         
         // Add battle narrative
         const log = [
-          '⚔️ Battle begins!',
+          'BATTLE INITIATED',
           `🎯 Opponent: ${result.aiOpponent ? `${result.aiOpponent.avatar} ${result.aiOpponent.name}` : '🎲 Random AI'}`,
           result.aiOpponent ? `📋 Strategy: ${result.aiOpponent.strategy} (${result.aiOpponent.difficulty})` : '',
-          `🃏 You played: ${result.playerCards.map((c: Card) => c.name).join(', ')}`,
+          `CARDS: ${result.playerCards.map((c: Card) => c.name).join(', ')}`,
           `🤖 AI played: ${result.aiCards.map((c: Card) => c.name).join(', ')}`,
-          `⚡ Your total power: ${result.playerPower}`,
-          `⚡ AI total power: ${result.aiPower}`,
-          result.playerWins ? '🏆 Victory is yours!' : '💀 The AI emerges victorious!'
+          `ATK POWER: ${result.playerPower}`,
+          `AI POWER: ${result.aiPower}`,
+          result.playerWins ? 'VICTORY' : 'DEFEAT'
         ].filter(Boolean)
         
         setBattleLog(log)
@@ -205,7 +205,7 @@ export default function BattleArena() {
               Battle Arena
             </h1>
             <div className="bg-white/10 backdrop-blur-sm rounded-lg p-8 border border-white/20 text-center">
-              <div className="text-6xl mb-4">⚔️</div>
+              <div className="label-mono" style={{fontSize:"2rem",color:"var(--signal-cyan)",marginBottom:"1rem"}}>[//]</div>
               <h2 className="text-2xl font-semibold text-white mb-4">
                 No Cards Available
               </h2>
@@ -236,7 +236,7 @@ export default function BattleArena() {
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto">
           <h1 className="text-4xl font-bold text-white text-center mb-8">
-            ⚔️ Battle Arena
+            BATTLE ARENA
           </h1>
 
           {!battleResult ? (
@@ -253,7 +253,7 @@ export default function BattleArena() {
                       }}
                       className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold py-4 px-6 rounded-lg transition-all duration-200 transform hover:scale-105"
                     >
-                      <div className="text-2xl mb-2">🎲</div>
+                      <span className="model-tag">[RND]</span>
                       <div>Quick Battle</div>
                       <div className="text-sm opacity-80">Random opponent</div>
                     </button>
@@ -261,7 +261,7 @@ export default function BattleArena() {
                       onClick={() => setShowOpponentSelector(true)}
                       className="flex-1 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white font-bold py-4 px-6 rounded-lg transition-all duration-200 transform hover:scale-105"
                     >
-                      <div className="text-2xl mb-2">🎯</div>
+                      <span className="model-tag">[TGT]</span>
                       <div>Strategic Battle</div>
                       <div className="text-sm opacity-80">Choose your opponent</div>
                     </button>
@@ -300,7 +300,7 @@ export default function BattleArena() {
 
                   {activeDeck ? (
                     <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4 rounded">
-                      <p className="font-bold">🃏 Using Active Deck</p>
+                      <p className="label-mono">ACTIVE DECK</p>
                       <p>Your active deck &quot;{activeDeck.name}&quot; will be used for battle. You can change your active deck in the Deck Builder.</p>
                     </div>
                   ) : (
@@ -349,7 +349,7 @@ export default function BattleArena() {
                         </div>
                         <div className="flex items-center gap-1">
                           {card.isFavorite && (
-                            <span className="text-yellow-400 text-xs" title="Favorite">⭐</span>
+                            <span className="label-mono" style={{color:"var(--neutral-amber)"}}>FAV</span>
                           )}
                           <div className="text-xs text-gray-400 uppercase">
                             {card.rarity}
@@ -369,9 +369,9 @@ export default function BattleArena() {
 
                       {/* Stats */}
                       <div className="flex justify-between text-xs">
-                        <span className="text-red-400">⚔️ {card.attack}</span>
-                        <span className="text-blue-400">🛡️ {card.defense}</span>
-                        <span className="text-green-400">❤️ {card.health}</span>
+                        <span className="label-mono" style={{color:"var(--loss-red)"}}>ATK {card.attack}</span>
+                        <span className="label-mono" style={{color:"var(--signal-cyan)"}}>DEF {card.defense}</span>
+                        <span className="label-mono" style={{color:"var(--profit-green)"}}>HP {card.health}</span>
                       </div>
 
                       {selectedCards.includes(card.id) && (
@@ -466,9 +466,9 @@ export default function BattleArena() {
                           <p className="text-gray-400 text-sm">{card.cardType}</p>
                         </div>
                         <div className="flex space-x-2 text-sm">
-                          <span className="text-red-400">⚔️ {card.attack}</span>
-                          <span className="text-blue-400">🛡️ {card.defense}</span>
-                          <span className="text-green-400">❤️ {card.health}</span>
+                          <span className="label-mono" style={{color:"var(--loss-red)"}}>ATK {card.attack}</span>
+                          <span className="label-mono" style={{color:"var(--signal-cyan)"}}>DEF {card.defense}</span>
+                          <span className="label-mono" style={{color:"var(--profit-green)"}}>HP {card.health}</span>
                         </div>
                       </div>
                     ))}
@@ -500,9 +500,9 @@ export default function BattleArena() {
                           <p className="text-gray-400 text-sm">{card.cardType}</p>
                         </div>
                         <div className="flex space-x-2 text-sm">
-                          <span className="text-red-400">⚔️ {card.attack}</span>
-                          <span className="text-blue-400">🛡️ {card.defense}</span>
-                          <span className="text-green-400">❤️ {card.health}</span>
+                          <span className="label-mono" style={{color:"var(--loss-red)"}}>ATK {card.attack}</span>
+                          <span className="label-mono" style={{color:"var(--signal-cyan)"}}>DEF {card.defense}</span>
+                          <span className="label-mono" style={{color:"var(--profit-green)"}}>HP {card.health}</span>
                         </div>
                       </div>
                     ))}

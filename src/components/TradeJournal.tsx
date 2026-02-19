@@ -178,7 +178,7 @@ export default function TradeJournal() {
               className="w-full h-12 px-4 bg-void-deep border border-white/10 rounded-lg text-white font-bold text-xs focus:outline-none focus:border-neon-neutral transition-all appearance-none cursor-pointer"
             >
               <option value="">ALL RARITIES</option>
-              <option value="LEGENDARY">⭐ LEGENDARY</option>
+              <option value="LEGENDARY">LEGENDARY</option>
               <option value="EPIC">🟣 EPIC</option>
               <option value="RARE">🔵 RARE</option>
               <option value="COMMON">⚪ COMMON</option>
@@ -209,7 +209,7 @@ export default function TradeJournal() {
 
         {filteredCards.length === 0 ? (
           <div className="text-center py-24 terminal-card border-dashed">
-            <div className="text-6xl mb-6 grayscale opacity-20">📊</div>
+            <div className="label-mono" style={{fontSize:"2rem",opacity:0.15,marginBottom:"1.5rem"}}>[---]</div>
             <h3 className="text-2xl font-bold text-white mb-2 uppercase">Archives Empty</h3>
             <p className="text-secondary text-sm max-w-md mx-auto mb-8 font-mono">
               No trade cards match the current filter parameters.

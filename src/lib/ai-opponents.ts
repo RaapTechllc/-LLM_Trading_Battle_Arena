@@ -18,7 +18,7 @@ export const AI_OPPONENTS = [
     difficulty: AI_DIFFICULTIES.EASY,
     strategy: AI_STRATEGIES.BALANCED,
     description: 'A beginner warrior learning the ropes',
-    avatar: '🥉'
+    avatar: 'RKI'
   },
   {
     id: 'berserker',
@@ -26,7 +26,7 @@ export const AI_OPPONENTS = [
     difficulty: AI_DIFFICULTIES.MEDIUM,
     strategy: AI_STRATEGIES.AGGRESSIVE,
     description: 'Attacks relentlessly with high-power cards',
-    avatar: '⚡'
+    avatar: 'SPD'
   },
   {
     id: 'guardian',
@@ -34,7 +34,7 @@ export const AI_OPPONENTS = [
     difficulty: AI_DIFFICULTIES.MEDIUM,
     strategy: AI_STRATEGIES.DEFENSIVE,
     description: 'Focuses on defense and outlasting opponents',
-    avatar: '🛡️'
+    avatar: 'DEF'
   },
   {
     id: 'treasure-hunter',
@@ -42,7 +42,7 @@ export const AI_OPPONENTS = [
     difficulty: AI_DIFFICULTIES.HARD,
     strategy: AI_STRATEGIES.RARITY,
     description: 'Seeks out the most powerful rare cards',
-    avatar: '💎'
+    avatar: 'GEM'
   },
   {
     id: 'grandmaster',
@@ -50,7 +50,7 @@ export const AI_OPPONENTS = [
     difficulty: AI_DIFFICULTIES.HARD,
     strategy: AI_STRATEGIES.BALANCED,
     description: 'A master strategist with perfect balance',
-    avatar: '👑'
+    avatar: 'OVR'
   }
 ] as const;
 

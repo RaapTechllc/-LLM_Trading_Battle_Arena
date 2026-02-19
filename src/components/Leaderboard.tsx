@@ -85,7 +85,7 @@ export default function Leaderboard() {
       <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 pb-6 border-b-2 border-white/10">
         <div>
           <h2 className="text-4xl md:text-5xl font-black tracking-tighter text-white flex flex-col md:flex-row md:items-center gap-4 mb-3" style={{fontFamily: 'var(--font-display)'}}>
-            <span className="text-5xl">🏆</span>
+            <span className="model-tag" style={{fontSize:"1rem",padding:"0.4rem 0.6rem"}}>RANK</span>
             <span className="uppercase">MODEL LEADERBOARD</span>
           </h2>
           <div className="flex items-center gap-3">
@@ -138,7 +138,7 @@ export default function Leaderboard() {
               {/* Crown for winner */}
               {rank === 1 && (
                 <div className="absolute -top-4 left-1/2 -translate-x-1/2 text-3xl drop-shadow-[0_0_20px_rgba(245,158,11,0.6)] animate-pulse">
-                  👑
+                  
                 </div>
               )}
 
@@ -228,7 +228,7 @@ export default function Leaderboard() {
 
         <div className="bg-gradient-to-br from-white/5 to-transparent px-8 py-4 border-b border-white/10">
           <h3 className="text-xs font-black tracking-[0.3em] text-white uppercase flex items-center gap-3" style={{fontFamily: 'var(--font-display)'}}>
-            <span className="text-neon-neutral text-xl">📊</span>
+            <span className="model-tag">STAT</span>
             Arena Aggregated Intelligence
           </h3>
         </div>

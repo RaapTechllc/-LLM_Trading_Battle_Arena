@@ -117,9 +117,9 @@ export default function ModelShowdown() {
           <h2 className="text-xs font-black tracking-[0.5em] text-tertiary uppercase mb-12 flex items-center justify-center gap-4" style={{fontFamily: 'var(--font-display)'}}>
             <span className="h-[2px] w-20 bg-gradient-to-r from-transparent to-neon-loss"></span>
             <span className="flex items-center gap-3">
-              <span className="text-neon-loss text-2xl animate-pulse">⚔️</span>
+              <span className="model-tag" style={{color:"var(--loss-red)",borderColor:"var(--loss-red)"}}>VS</span>
               MODEL SHOWDOWN ACTIVE
-              <span className="text-neon-loss text-2xl animate-pulse">⚔️</span>
+              <span className="model-tag" style={{color:"var(--loss-red)",borderColor:"var(--loss-red)"}}>VS</span>
             </span>
             <span className="h-[2px] w-20 bg-gradient-to-l from-transparent to-neon-loss"></span>
           </h2>
@@ -244,7 +244,7 @@ export default function ModelShowdown() {
     <div className="max-w-4xl mx-auto">
       <div className="terminal-card overflow-hidden">
         <div className="bg-white/5 px-8 py-4 border-b border-white/10 flex justify-between items-center">
-          <h2 className="text-sm font-black tracking-[0.2em] text-white uppercase">⚔️ ENGAGE SHOWDOWN PROTOCOL</h2>
+          <h2 className="text-sm font-black tracking-[0.2em] text-white uppercase">ENGAGE SHOWDOWN PROTOCOL</h2>
           <div className="flex gap-1">
             <div className="w-2 h-2 rounded-full bg-neon-loss animate-pulse"></div>
             <div className="w-2 h-2 rounded-full bg-neon-warning"></div>

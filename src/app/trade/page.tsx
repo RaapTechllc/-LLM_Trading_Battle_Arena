@@ -266,9 +266,9 @@ export default function TradePage() {
                             />
                           </div>
                           <div className="flex justify-between text-xs">
-                            <span className="text-red-400">⚔️ {card.attack}</span>
-                            <span className="text-blue-400">🛡️ {card.defense}</span>
-                            <span className="text-green-400">❤️ {card.health}</span>
+                            <span className="label-mono" style={{color:"var(--loss-red)"}}>ATK {card.attack}</span>
+                            <span className="label-mono" style={{color:"var(--signal-cyan)"}}>DEF {card.defense}</span>
+                            <span className="label-mono" style={{color:"var(--profit-green)"}}>HP {card.health}</span>
                           </div>
                         </HolographicCard>
                       ))}
@@ -307,9 +307,9 @@ export default function TradePage() {
                             />
                           </div>
                           <div className="flex justify-between text-xs">
-                            <span className="text-red-400">⚔️ {card.attack}</span>
-                            <span className="text-blue-400">🛡️ {card.defense}</span>
-                            <span className="text-green-400">❤️ {card.health}</span>
+                            <span className="label-mono" style={{color:"var(--loss-red)"}}>ATK {card.attack}</span>
+                            <span className="label-mono" style={{color:"var(--signal-cyan)"}}>DEF {card.defense}</span>
+                            <span className="label-mono" style={{color:"var(--profit-green)"}}>HP {card.health}</span>
                           </div>
                         </HolographicCard>
                       ))}

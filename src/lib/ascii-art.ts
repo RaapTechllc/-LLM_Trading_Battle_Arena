@@ -142,11 +142,11 @@ export const ASCII_CARD_ART = {
 // Battle effect animations
 export const BATTLE_EFFECTS = {
   ATTACK: `
-    ⚡ ⚡ ⚡ ⚡ ⚡
-     ⚡ ⚡ ⚡ ⚡
-    ⚡ ⚡ ⚡ ⚡ ⚡
-     ⚡ ⚡ ⚡ ⚡
-    ⚡ ⚡ ⚡ ⚡ ⚡`,
+    + + + + +
+     + + + +
+    + + + + +
+     + + + +
+    + + + + +`,
   
   DEFEND: `
     ░▓▓▓▓▓▓▓▓▓▓▓░
@@ -156,11 +156,11 @@ export const BATTLE_EFFECTS = {
     ░▓▓▓▓▓▓▓▓▓▓▓░`,
   
   MAGIC: `
-    ✨ ⭐ ✨ ⭐ ✨
-     ⭐ ✨ ⭐ ✨
-    ✨ ⭐ ✨ ⭐ ✨
-     ⭐ ✨ ⭐ ✨
-    ✨ ⭐ ✨ ⭐ ✨`,
+    * . * . *
+     . * . .
+    * . * . *
+     . * . .
+    * . * . *`,
   
   CRITICAL: `
     💥 💥 💥 💥 💥
@@ -173,16 +173,16 @@ export const BATTLE_EFFECTS = {
 // Victory/defeat animations
 export const RESULT_ANIMATIONS = {
   VICTORY: `
-    🎉 🏆 🎉 🏆 🎉
-     🏆 🎉 🏆 🎉
-    🎉 🏆 🎉 🏆 🎉
-     🏆 🎉 🏆 🎉
-    🎉 🏆 🎉 🏆 🎉`,
+    # = # = #
+     = # = #
+    # = # = #
+     = # = #
+    # = # = #`,
   
   DEFEAT: `
-    💀 ⚰️ 💀 ⚰️ 💀
-     ⚰️ 💀 ⚰️ 💀
-    💀 ⚰️ 💀 ⚰️ 💀
-     ⚰️ 💀 ⚰️ 💀
-    💀 ⚰️ 💀 ⚰️ 💀`
+    x   x   x
+      x   x  
+    x   x   x
+      x   x  
+    x   x   x`
 }

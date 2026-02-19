@@ -119,7 +119,7 @@ export default function AccountPage() {
 
         <div className="mt-8 bg-blue-900/20 border border-blue-500 rounded-lg p-4">
           <p className="text-blue-400 text-sm">
-            ℹ️ This is a paper trading account. You started with $10,000 virtual capital.
+            [i] PAPER TRADING ACCOUNT. You started with $10,000 virtual capital.
           </p>
         </div>
       </div>
