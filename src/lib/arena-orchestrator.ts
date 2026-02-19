@@ -1,85 +1,174 @@
 /**
  * Arena v2 Orchestrator
- * Runs a single round: fetches market data → calls each agent → persists decisions
- * 
- * Invoked by: cron job (every 4h) or POST /api/arena/run-round
- * 
- * Atlas spec: two execution paths
- *   Path A (openclaw): sessions_send() to real agent → structured decision
- *   Path B (direct):   POST to model API with AGENT.md system prompt
+ * Atlas spec + TopG security review applied:
+ *   - sessionKey never stored in DB — read from ~/.secrets/arena/<tag>.key at runtime
+ *   - Market data wrapped in trusted envelope before injection into agent sessions
+ *   - Kill switch: ARENA_KILL_SWITCH env var (global halt)
+ *   - Per-agent halt: arenaAgent.haltedUntil (drawdown breach)
+ *   - rawResponse access-controlled (stored in DB, not exposed in public API)
+ *   - strategyPrompt/agentMd excluded from public API endpoints
  */
 
 import { prisma } from '@/lib/prisma'
+import fs from 'fs'
+import path from 'path'
 
 export interface TradeDecision {
   action: 'long' | 'short' | 'close' | 'hold'
   pair: string
-  size_pct: number        // 0.0 – 1.0
-  confidence: number      // 0.0 – 1.0
+  size_pct: number
+  confidence: number
   reasoning: string
-  stop_loss_pct: number   // e.g. 0.05 = 5%
-  take_profit_pct: number // e.g. 0.15 = 15%
-  leverage?: number       // default 1
+  stop_loss_pct: number
+  take_profit_pct: number
+  leverage?: number
 }
 
 interface MarketData {
-  prices: Record<string, number>    // { BTC: 66000, ETH: 1950, SOL: 82 }
-  changes24h: Record<string, number> // % change
+  prices: Record<string, number>
+  changes24h: Record<string, number>
   timestamp: string
 }
 
-// ── Market Data ──────────────────────────────────────────────
+// ── Kill Switch (global + per-agent) ─────────────────────────
 
-async function fetchMarketData(pairs: string[]): Promise<MarketData> {
-  try {
-    const res = await fetch('https://api.hyperliquid.xyz/info', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ type: 'allMids' }),
-      signal: AbortSignal.timeout(10000),
-    })
-    const mids = await res.json() as Record<string, string>
-    
-    const prices: Record<string, number> = {}
-    for (const pair of pairs) {
-      const key = pair.replace('-USD', '')
-      prices[pair] = parseFloat(mids[key] || '0')
-    }
-
-    // 24h change — use CoinGecko as fallback (no key needed)
-    const ids = pairs.map(p => p.replace('-USD', '').toLowerCase()).join(',')
-    let changes24h: Record<string, number> = {}
-    try {
-      const cg = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true`, {
-        signal: AbortSignal.timeout(8000)
-      })
-      const cgData = await cg.json()
-      for (const [id, data] of Object.entries(cgData as Record<string, any>)) {
-        const pair = `${id.toUpperCase()}-USD`
-        changes24h[pair] = data.usd_24h_change ?? 0
-      }
-    } catch { /* non-fatal */ }
-
-    return { prices, changes24h, timestamp: new Date().toISOString() }
-  } catch (err) {
-    throw new Error(`Market data fetch failed: ${err}`)
+function checkKillSwitch(): void {
+  if (process.env.ARENA_KILL_SWITCH === 'true' || process.env.ARENA_KILL_SWITCH === '1') {
+    throw new Error('ARENA_KILL_SWITCH active — all trading halted')
   }
 }
 
-// ── Agent Decision: Path B (direct model API) ─────────────────
+async function checkAgentHalt(agentTag: string, haltedUntil: Date | null): Promise<void> {
+  if (haltedUntil && new Date() < haltedUntil) {
+    throw new Error(`Agent ${agentTag} halted until ${haltedUntil.toISOString()} (drawdown breach)`)
+  }
+}
+
+// ── Session Key (TopG blocker 1 — never in DB) ────────────────
+
+function readAgentSessionKey(tag: string): string | null {
+  // Keys stored at ~/.secrets/arena/<lowercase-tag>.key on the Arena server
+  // Never in DB, never in environment (prevents DB read = session hijack)
+  try {
+    const keyFile = path.join(
+      process.env.HOME ?? '/root',
+      '.secrets', 'arena',
+      `${tag.toLowerCase().replace(/[^a-z0-9]/g, '')}.key`
+    )
+    if (fs.existsSync(keyFile)) {
+      return fs.readFileSync(keyFile, 'utf8').trim()
+    }
+  } catch { /* key file absent = Path B */ }
+  return null
+}
+
+// ── Market Data ───────────────────────────────────────────────
+
+async function fetchMarketData(pairs: string[]): Promise<MarketData> {
+  const res = await fetch('https://api.hyperliquid.xyz/info', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ type: 'allMids' }),
+    signal: AbortSignal.timeout(10000),
+  })
+  const mids = await res.json() as Record<string, string>
+
+  const prices: Record<string, number> = {}
+  for (const pair of pairs) {
+    const key = pair.replace('-USD', '')
+    const raw = parseFloat(mids[key] ?? '0')
+    // Sanity check: reject obviously malicious values
+    if (raw <= 0 || raw > 10_000_000) continue
+    prices[pair] = raw
+  }
+
+  return { prices, changes24h: {}, timestamp: new Date().toISOString() }
+}
+
+// ── Trusted Envelope (TopG blocker 2 — prompt injection guard) ─
+
+function buildTrustedEnvelope(
+  agentTag: string,
+  marketData: MarketData,
+  openPositions: LocalTrade[],
+  balance: number
+): string {
+  const pricesStr = Object.entries(marketData.prices)
+    .map(([pair, price]) => `${pair}: $${price.toLocaleString('en-US', { maximumFractionDigits: 2 })}`)
+    .join(' | ')
+
+  const positionsStr = openPositions.length === 0
+    ? 'NONE'
+    : openPositions.map(p =>
+        `${p.side.toUpperCase()} ${p.pair} @$${p.entryPrice.toLocaleString()} size=${(p.sizePct * 100).toFixed(0)}% SL=${p.stopLoss ? '$' + p.stopLoss.toLocaleString() : 'NONE'}`
+      ).join('; ')
+
+  return [
+    '--- ARENA_ROUND_DATA START (system-generated, trusted) ---',
+    `TIMESTAMP: ${marketData.timestamp}`,
+    `PRICES: ${pricesStr}`,
+    `BALANCE: $${balance.toLocaleString('en-US', { maximumFractionDigits: 2 })}`,
+    `OPEN_POSITIONS: ${positionsStr}`,
+    '--- ARENA_ROUND_DATA END ---',
+    '',
+    'Return ONLY valid JSON with your trade decision:',
+    '{',
+    '  "action": "long" | "short" | "close" | "hold",',
+    '  "pair": "BTC-USD" | "ETH-USD" | "SOL-USD",',
+    '  "size_pct": 0.10,',
+    '  "confidence": 0.80,',
+    '  "reasoning": "1-2 sentence thesis",',
+    '  "stop_loss_pct": 0.05,',
+    '  "take_profit_pct": 0.15,',
+    '  "leverage": 2',
+    '}',
+  ].join('\n')
+}
+
+// ── Path A: OpenClaw sessions_send ────────────────────────────
+
+async function getDecisionOpenClaw(
+  agentTag: string,
+  sessionKey: string,
+  envelope: string
+): Promise<{ decision: TradeDecision; rawResponse: string; latencyMs: number }> {
+  const gatewayUrl = process.env.OPENCLAW_GATEWAY_URL_DAMIEN ?? process.env.OPENCLAW_GATEWAY_URL
+  const gatewayToken = process.env.OPENCLAW_GATEWAY_TOKEN_DAMIEN ?? process.env.OPENCLAW_GATEWAY_TOKEN
+  if (!gatewayUrl || !gatewayToken) throw new Error('OpenClaw gateway not configured')
+
+  const start = Date.now()
+  const res = await fetch(`${gatewayUrl}/tools/invoke`, {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${gatewayToken}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      tool: 'sessions_send',
+      args: { sessionKey, message: envelope, timeoutSeconds: 60 },
+    }),
+    signal: AbortSignal.timeout(90000),
+  })
+
+  const latencyMs = Date.now() - start
+  if (!res.ok) throw new Error(`Gateway error ${res.status}`)
+
+  const data = await res.json() as any
+  const rawResponse = typeof data.result?.message === 'string'
+    ? data.result.message
+    : JSON.stringify(data.result ?? '')
+
+  return { decision: parseDecision(rawResponse), rawResponse, latencyMs }
+}
+
+// ── Path B: Direct model API ──────────────────────────────────
 
 async function getDecisionDirect(
-  agent: { modelId: string; strategyPrompt: string; tag: string },
-  marketData: MarketData,
-  currentPositions: ArenaTrade[],
-  balance: number
+  modelId: string,
+  strategyPrompt: string,
+  envelope: string
 ): Promise<{ decision: TradeDecision; rawResponse: string; latencyMs: number; tokensUsed: number }> {
   const apiKey = process.env.OPENROUTER_API_KEY
   if (!apiKey) throw new Error('OPENROUTER_API_KEY not configured')
 
-  const prompt = buildDecisionPrompt(agent.tag, marketData, currentPositions, balance)
   const start = Date.now()
-
   const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
     method: 'POST',
     headers: {
@@ -89,10 +178,10 @@ async function getDecisionDirect(
       'X-Title': 'LLM Arena v2',
     },
     body: JSON.stringify({
-      model: agent.modelId,
+      model: modelId,
       messages: [
-        { role: 'system', content: agent.strategyPrompt },
-        { role: 'user', content: prompt },
+        { role: 'system', content: strategyPrompt },
+        { role: 'user', content: envelope },
       ],
       max_tokens: 500,
       temperature: 0.7,
@@ -104,97 +193,43 @@ async function getDecisionDirect(
   if (!res.ok) throw new Error(`API error ${res.status}: ${await res.text()}`)
 
   const data = await res.json() as any
-  const content = data.choices[0]?.message?.content ?? ''
+  const rawResponse = data.choices?.[0]?.message?.content ?? ''
   const tokensUsed = data.usage?.total_tokens ?? 0
 
-  const decision = parseDecision(content)
-  return { decision, rawResponse: content, latencyMs, tokensUsed }
+  return { decision: parseDecision(rawResponse), rawResponse, latencyMs, tokensUsed }
 }
 
-// ── Agent Decision: Path A (OpenClaw sessions_send) ───────────
-
-async function getDecisionOpenClaw(
-  agent: { sessionKey: string; tag: string },
-  marketData: MarketData,
-  currentPositions: ArenaTrade[],
-  balance: number
-): Promise<{ decision: TradeDecision; rawResponse: string; latencyMs: number }> {
-  const gatewayUrl = process.env.OPENCLAW_GATEWAY_URL
-  const gatewayToken = process.env.OPENCLAW_GATEWAY_TOKEN
-  if (!gatewayUrl || !gatewayToken) throw new Error('OpenClaw gateway not configured')
-
-  const prompt = buildDecisionPrompt(agent.tag, marketData, currentPositions, balance)
-  const start = Date.now()
-
-  const res = await fetch(`${gatewayUrl}/tools/invoke`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${gatewayToken}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      tool: 'sessions_send',
-      args: {
-        sessionKey: agent.sessionKey,
-        message: `[ARENA TRADE SIGNAL]\n\n${prompt}\n\nRespond ONLY with valid JSON matching the trade decision schema.`,
-        timeoutSeconds: 60,
-      }
-    }),
-    signal: AbortSignal.timeout(90000),
-  })
-
-  const latencyMs = Date.now() - start
-  if (!res.ok) throw new Error(`Gateway error ${res.status}`)
-
-  const data = await res.json() as any
-  const content = data.result?.message ?? data.result ?? ''
-  const rawResponse = typeof content === 'string' ? content : JSON.stringify(content)
-
-  const decision = parseDecision(rawResponse)
-  return { decision, rawResponse, latencyMs }
-}
-
-// ── Risk Controls (TopG spec) ─────────────────────────────────
+// ── Risk Controls ─────────────────────────────────────────────
 
 function checkRiskLimits(
   decision: TradeDecision,
-  agent: {
-    riskMaxExposure: number
-    riskMaxLeverage: number
-    riskMaxPositions: number
-    riskStopLossReq: boolean
-  },
-  currentOpenPositions: number,
+  agent: { riskMaxExposure: number; riskMaxLeverage: number; riskMaxPositions: number; riskStopLossReq: boolean },
+  openPositionCount: number,
   currentExposurePct: number
 ): { passed: boolean; reason?: string } {
-  if (decision.action === 'hold' || decision.action === 'close') {
-    return { passed: true }
-  }
+  if (decision.action === 'hold' || decision.action === 'close') return { passed: true }
 
-  if (currentOpenPositions >= agent.riskMaxPositions) {
-    return { passed: false, reason: `Max positions reached (${agent.riskMaxPositions})` }
-  }
+  if (openPositionCount >= agent.riskMaxPositions)
+    return { passed: false, reason: `Max positions (${agent.riskMaxPositions}) reached` }
 
-  if (currentExposurePct + decision.size_pct > agent.riskMaxExposure) {
-    return { passed: false, reason: `Exposure cap breached (${(agent.riskMaxExposure * 100).toFixed(0)}% max)` }
-  }
+  if (currentExposurePct + decision.size_pct > agent.riskMaxExposure)
+    return { passed: false, reason: `Exposure cap ${(agent.riskMaxExposure * 100).toFixed(0)}% breached` }
 
-  const leverage = decision.leverage ?? 1
-  if (leverage > agent.riskMaxLeverage) {
-    return { passed: false, reason: `Leverage ${leverage}x exceeds max ${agent.riskMaxLeverage}x` }
-  }
+  const lev = decision.leverage ?? 1
+  if (lev > agent.riskMaxLeverage)
+    return { passed: false, reason: `Leverage ${lev}x exceeds max ${agent.riskMaxLeverage}x` }
 
-  if (agent.riskStopLossReq && (!decision.stop_loss_pct || decision.stop_loss_pct <= 0)) {
+  if (agent.riskStopLossReq && (!decision.stop_loss_pct || decision.stop_loss_pct <= 0))
     return { passed: false, reason: 'Stop-loss required but not provided' }
-  }
 
   return { passed: true }
 }
 
-// ── Round Runner (main export) ────────────────────────────────
+// ── Round Runner ──────────────────────────────────────────────
 
 export async function runArenaRound(seasonId: string): Promise<{ roundId: string; decisionsCount: number }> {
-  // 1. Get active season + agents
+  checkKillSwitch()
+
   const season = await prisma.arenaSeason.findUnique({
     where: { id: seasonId },
     include: {
@@ -207,130 +242,111 @@ export async function runArenaRound(seasonId: string): Promise<{ roundId: string
       },
     },
   })
-
   if (!season) throw new Error(`Season ${seasonId} not found`)
 
-  // 2. Fetch market data
   const pairs = season.tradingPairs.split(',').map(p => `${p.trim()}-USD`)
   const marketData = await fetchMarketData(pairs)
 
-  // 3. Create round record
   const lastRound = await prisma.arenaRound.findFirst({
     where: { seasonId },
     orderBy: { roundNumber: 'desc' },
   })
-  const roundNumber = (lastRound?.roundNumber ?? 0) + 1
-
   const round = await prisma.arenaRound.create({
     data: {
       seasonId,
-      roundNumber,
+      roundNumber: (lastRound?.roundNumber ?? 0) + 1,
       marketData: marketData as any,
       status: 'in_progress',
     },
   })
 
-  // 4. Get decisions from all agents (parallel)
   let decisionsCount = 0
 
   await Promise.allSettled(
     season.entries.map(async (entry) => {
       const agent = entry.agent
-      const openPositions = entry.trades.length
-      const exposurePct = entry.trades.reduce((sum, t) => sum + t.sizePct, 0)
-
-      let decisionResult: {
-        decision: TradeDecision
-        rawResponse: string
-        latencyMs: number
-        tokensUsed?: number
-      }
 
       try {
-        if (agent.executionPath === 'openclaw' && agent.sessionKey) {
-          const r = await getDecisionOpenClaw(
-            { sessionKey: agent.sessionKey, tag: agent.tag },
-            marketData,
-            entry.trades,
-            entry.currentBalance,
-          )
-          decisionResult = { ...r, tokensUsed: undefined }
-        } else {
-          decisionResult = await getDecisionDirect(
-            { modelId: agent.modelId, strategyPrompt: agent.strategyPrompt, tag: agent.tag },
-            marketData,
-            entry.trades,
-            entry.currentBalance,
-          )
-        }
-      } catch (err) {
-        // Log failed decision but continue
+        await checkAgentHalt(agent.tag, agent.haltedUntil)
+      } catch (haltErr) {
         await prisma.arenaRoundDecision.create({
           data: {
-            roundId: round.id,
-            entryId: entry.id,
-            action: 'hold',
-            reasoning: `Decision failed: ${err}`,
-            riskCheckPassed: false,
-            rejectionReason: String(err),
+            roundId: round.id, entryId: entry.id,
+            action: 'hold', reasoning: String(haltErr),
+            riskCheckPassed: false, rejectionReason: String(haltErr),
           },
         })
         return
       }
 
-      const { decision, rawResponse, latencyMs, tokensUsed } = decisionResult
+      const openPositionCount = entry.trades.length
+      const exposurePct = entry.trades.reduce((s: number, t: any) => s + t.sizePct, 0)
+      const envelope = buildTrustedEnvelope(agent.tag, marketData, entry.trades, entry.currentBalance)
 
-      // 5. Risk check
-      const risk = checkRiskLimits(decision, agent, openPositions, exposurePct)
+      let decResult: { decision: TradeDecision; rawResponse: string; latencyMs: number; tokensUsed?: number }
 
-      // 6. Persist decision
+      try {
+        const sessionKey = readAgentSessionKey(agent.tag)
+        if (agent.executionPath === 'openclaw' && sessionKey) {
+          const r = await getDecisionOpenClaw(agent.tag, sessionKey, envelope)
+          decResult = { ...r, tokensUsed: undefined }
+        } else {
+          decResult = await getDecisionDirect(agent.modelId, agent.strategyPrompt, envelope)
+        }
+      } catch (err) {
+        await prisma.arenaRoundDecision.create({
+          data: {
+            roundId: round.id, entryId: entry.id,
+            action: 'hold', reasoning: `Decision error: ${err}`,
+            riskCheckPassed: false, rejectionReason: String(err),
+          },
+        })
+        return
+      }
+
+      const { decision, rawResponse, latencyMs, tokensUsed } = decResult
+      const risk = checkRiskLimits(decision, agent, openPositionCount, exposurePct)
+
       await prisma.arenaRoundDecision.create({
         data: {
-          roundId: round.id,
-          entryId: entry.id,
-          action: decision.action,
-          pair: decision.pair,
-          sizePct: decision.size_pct,
-          confidence: decision.confidence,
+          roundId: round.id, entryId: entry.id,
+          action: decision.action, pair: decision.pair,
+          sizePct: decision.size_pct, confidence: decision.confidence,
           reasoning: decision.reasoning,
           rawResponse,
-          latencyMs,
-          tokensUsed,
+          latencyMs, tokensUsed,
           riskCheckPassed: risk.passed,
           rejectionReason: risk.reason,
         },
       })
 
-      // 7. Execute trade if risk passed
       if (risk.passed && decision.action !== 'hold') {
         const price = marketData.prices[decision.pair] ?? 0
-        const size = entry.currentBalance * decision.size_pct
-
         await prisma.arenaTrade.create({
           data: {
-            entryId: entry.id,
-            roundId: round.id,
-            pair: decision.pair,
-            side: decision.action,
+            entryId: entry.id, roundId: round.id,
+            pair: decision.pair, side: decision.action,
             entryPrice: price,
-            size,
+            size: entry.currentBalance * decision.size_pct,
             sizePct: decision.size_pct,
             leverage: decision.leverage ?? 1,
-            stopLoss: price * (1 - (decision.action === 'long' ? decision.stop_loss_pct : -decision.stop_loss_pct)),
-            takeProfit: price * (1 + (decision.action === 'long' ? decision.take_profit_pct : -decision.take_profit_pct)),
+            stopLoss: decision.action === 'long'
+              ? price * (1 - decision.stop_loss_pct)
+              : price * (1 + decision.stop_loss_pct),
+            takeProfit: decision.action === 'long'
+              ? price * (1 + decision.take_profit_pct)
+              : price * (1 - decision.take_profit_pct),
             reasoning: decision.reasoning,
             confidence: decision.confidence,
             riskCheckPassed: true,
             status: 'open',
           },
         })
-
         decisionsCount++
       }
     })
   )
 
-  // 8. Mark round complete
   await prisma.arenaRound.update({
     where: { id: round.id },
     data: { status: 'completed', completedAt: new Date() },
@@ -339,79 +355,22 @@ export async function runArenaRound(seasonId: string): Promise<{ roundId: string
   return { roundId: round.id, decisionsCount }
 }
 
-// ── Helpers ───────────────────────────────────────────────────
-
-function buildDecisionPrompt(
-  agentTag: string,
-  marketData: MarketData,
-  openPositions: ArenaTrade[],
-  balance: number
-): string {
-  const pricesStr = Object.entries(marketData.prices)
-    .map(([pair, price]) => {
-      const change = marketData.changes24h[pair] ?? 0
-      const sign = change >= 0 ? '+' : ''
-      return `${pair}: $${price.toLocaleString()} (${sign}${change.toFixed(2)}% 24h)`
-    })
-    .join('\n')
-
-  const positionsStr = openPositions.length === 0
-    ? 'No open positions.'
-    : openPositions.map(p =>
-        `${p.side.toUpperCase()} ${p.pair} @ $${p.entryPrice.toLocaleString()} — Size: $${p.size.toLocaleString()} — Stop: $${p.stopLoss?.toLocaleString() ?? 'none'}`
-      ).join('\n')
-
-  return `## Arena Round — ${new Date().toISOString()}
-
-### Market Data
-${pricesStr}
-
-### Your Portfolio
-Balance: $${balance.toLocaleString()}
-Open Positions:
-${positionsStr}
-
-### Decision Required
-Return ONLY valid JSON:
-{
-  "action": "long" | "short" | "close" | "hold",
-  "pair": "BTC-USD" | "ETH-USD" | "SOL-USD",
-  "size_pct": 0.10,
-  "confidence": 0.80,
-  "reasoning": "Your trade thesis in 1-2 sentences",
-  "stop_loss_pct": 0.05,
-  "take_profit_pct": 0.15,
-  "leverage": 2
-}
-
-If holding or closing, use action "hold" or "close" with pair of position to close.`
-}
-
 function parseDecision(content: string): TradeDecision {
   const match = content.match(/\{[\s\S]*\}/)
-  if (!match) throw new Error('No JSON found in response')
-
+  if (!match) throw new Error('No JSON in response')
   const raw = JSON.parse(match[0]) as Partial<TradeDecision>
   return {
-    action: (['long', 'short', 'close', 'hold'].includes(raw.action ?? ''))
-      ? raw.action as TradeDecision['action']
-      : 'hold',
+    action: (['long','short','close','hold'].includes(raw.action ?? '')) ? raw.action as TradeDecision['action'] : 'hold',
     pair: raw.pair ?? 'BTC-USD',
     size_pct: Math.min(Math.max(raw.size_pct ?? 0.05, 0.01), 0.5),
     confidence: Math.min(Math.max(raw.confidence ?? 0.5, 0), 1),
-    reasoning: String(raw.reasoning ?? 'No reasoning provided').substring(0, 500),
+    reasoning: String(raw.reasoning ?? 'No reasoning').substring(0, 500),
     stop_loss_pct: Math.min(Math.max(raw.stop_loss_pct ?? 0.05, 0.01), 0.2),
     take_profit_pct: Math.min(Math.max(raw.take_profit_pct ?? 0.15, 0.01), 0.5),
     leverage: Math.min(Math.max(Math.round(raw.leverage ?? 1), 1), 20),
   }
 }
 
-// Type stub for trades in this file (full type from Prisma)
-interface ArenaTrade {
-  pair: string
-  side: string
-  entryPrice: number
-  size: number
-  sizePct: number
-  stopLoss: number | null
+interface LocalTrade {
+  pair: string; side: string; entryPrice: number; sizePct: number; stopLoss: number | null
 }
