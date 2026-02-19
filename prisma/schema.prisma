@@ -267,3 +267,148 @@ model ModelBattle {
   @@index([createdAt])
   @@map("model_battles")
 }
+
+// ──────────────────────────────────────────────
+// Arena v2 — OpenClaw Agent Trading League
+// Atlas schema spec 2026-02-19
+// ──────────────────────────────────────────────
+
+model ArenaAgent {
+  id               String   @id @default(cuid())
+  tag              String   @unique    // [DMN], [ATL], [GPT], etc.
+  name             String
+  modelProvider    String              // anthropic, openai-codex, minimax, etc.
+  modelId          String              // claude-opus-4-6, gpt-5.3-codex, etc.
+  executionPath    String              // "openclaw" or "direct"
+  sessionKey       String?             // OpenClaw session key (Path A only)
+  strategyPrompt   String   @db.Text  // Injected system prompt at trade time
+  agentMd          String?  @db.Text  // Full AGENT.md content
+  riskMaxExposure  Float    @default(0.50)
+  riskMaxLeverage  Float    @default(5.0)
+  riskMaxPositions Int      @default(3)
+  riskStopLossReq  Boolean  @default(true)
+  isActive         Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  seasonEntries    ArenaSeasonEntry[]
+
+  @@map("arena_agents")
+}
+
+model ArenaSeason {
+  id               String   @id @default(cuid())
+  name             String
+  roundIntervalMin Int      @default(240)  // 4h default
+  tradingPairs     String   @default("BTC,ETH,SOL")  // comma-sep
+  isActive         Boolean  @default(true)
+  startedAt        DateTime @default(now())
+  endedAt          DateTime?
+
+  entries          ArenaSeasonEntry[]
+  rounds           ArenaRound[]
+
+  @@map("arena_seasons")
+}
+
+model ArenaSeasonEntry {
+  id               String   @id @default(cuid())
+  agentId          String
+  seasonId         String
+  startingBalance  Float    @default(10000)
+  currentBalance   Float    @default(10000)
+  totalPnl         Float    @default(0)
+  realizedPnl      Float    @default(0)
+  unrealizedPnl    Float    @default(0)
+  winCount         Int      @default(0)
+  lossCount        Int      @default(0)
+  totalTrades      Int      @default(0)
+  sharpeRatio      Float    @default(0)
+  maxDrawdown      Float    @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  agent            ArenaAgent          @relation(fields: [agentId], references: [id])
+  season           ArenaSeason         @relation(fields: [seasonId], references: [id])
+  trades           ArenaTrade[]
+  decisions        ArenaRoundDecision[]
+
+  @@unique([agentId, seasonId])
+  @@map("arena_season_entries")
+}
+
+model ArenaTrade {
+  id               String   @id @default(cuid())
+  entryId          String
+  roundId          String?
+  pair             String   // BTC, ETH, SOL
+  side             String   // long, short
+  entryPrice       Float
+  exitPrice        Float?
+  size             Float    // Position size in USD
+  sizePct          Float    // % of balance at entry
+  leverage         Float    @default(1)
+  stopLoss         Float?
+  takeProfit       Float?
+  pnl              Float?
+  pnlPct           Float?
+  reasoning        String   @db.Text
+  confidence       Float?
+  riskCheckPassed  Boolean  @default(true)
+  killSwitchActive Boolean  @default(false)
+  status           String   @default("open")  // open, closed, stopped, liquidated, rejected
+  openedAt         DateTime @default(now())
+  closedAt         DateTime?
+
+  entry            ArenaSeasonEntry @relation(fields: [entryId], references: [id])
+  round            ArenaRound?      @relation(fields: [roundId], references: [id])
+
+  @@index([entryId])
+  @@index([roundId])
+  @@index([status])
+  @@index([openedAt])
+  @@map("arena_trades")
+}
+
+model ArenaRound {
+  id               String   @id @default(cuid())
+  seasonId         String
+  roundNumber      Int
+  marketData       Json     // Price snapshot at decision time
+  status           String   @default("pending")  // pending, in_progress, completed, failed
+  startedAt        DateTime @default(now())
+  completedAt      DateTime?
+
+  season           ArenaSeason         @relation(fields: [seasonId], references: [id])
+  decisions        ArenaRoundDecision[]
+  trades           ArenaTrade[]
+
+  @@unique([seasonId, roundNumber])
+  @@index([seasonId])
+  @@index([status])
+  @@map("arena_rounds")
+}
+
+model ArenaRoundDecision {
+  id               String   @id @default(cuid())
+  roundId          String
+  entryId          String
+  action           String   // long, short, close, hold
+  pair             String?
+  sizePct          Float?
+  confidence       Float?
+  reasoning        String   @db.Text
+  rawResponse      String?  @db.Text
+  latencyMs        Int?
+  tokensUsed       Int?
+  riskCheckPassed  Boolean  @default(true)
+  rejectionReason  String?
+  decidedAt        DateTime @default(now())
+
+  round            ArenaRound       @relation(fields: [roundId], references: [id])
+  entry            ArenaSeasonEntry @relation(fields: [entryId], references: [id])
+
+  @@unique([roundId, entryId])
+  @@index([roundId])
+  @@map("arena_round_decisions")
+}
