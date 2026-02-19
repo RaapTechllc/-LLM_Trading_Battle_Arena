@@ -17,7 +17,8 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:seed:large": "tsx scripts/seed-large-dataset.ts",
     "performance:test": "./scripts/performance-test.sh",
-    "demo:rehearsal": "./scripts/performance-test.sh 100"
+    "demo:rehearsal": "./scripts/performance-test.sh 100",
+    "provision:arena": "tsx scripts/provision-arena.ts"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.1",
