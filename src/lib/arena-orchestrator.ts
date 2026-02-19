@@ -6,7 +6,8 @@
  *   - Kill switch: ARENA_KILL_SWITCH env var (global halt)
  *   - Per-agent halt: arenaAgent.haltedUntil (drawdown breach)
  *   - rawResponse access-controlled (stored in DB, not exposed in public API)
- *   - strategyPrompt/agentMd excluded from public API endpoints
+   *   - strategyPrompt/agentMd excluded from public API endpoints
+ *     (enforced here — single point; do NOT add shortcut routes without TopG review)
  */
 
 import { prisma } from '@/lib/prisma'
