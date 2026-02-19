@@ -1,20 +1,13 @@
-// OpenRouter LLM Integration for AI Trading Decisions
+// OpenRouter LLM Integration — Elite Model Roster
+// Only flagship models. Grok 4.20 placeholder ready, commented until API available.
 
 export const MODEL_MAP: Record<string, string> = {
-  // Anthropic — 4.6 models (sonnet-4-6, opus-4-6)
   "Claude Sonnet 4.6": "anthropic/claude-sonnet-4-6",
   "Claude Opus 4.6":   "anthropic/claude-opus-4-6",
-  "Claude Sonnet":     "anthropic/claude-3.5-sonnet",
-  // xAI — Grok 420 not on API yet; using Grok 3
+  "GPT-5.3 Codex":     "openai-codex/gpt-5.3-codex",
+  "MiniMax M2.5":      "minimax/minimax-m2.5",
   "Grok 3":            "x-ai/grok-3",
-  // OpenAI
-  "GPT-4o":            "openai/gpt-4o",
-  // Google
-  "Gemini 2.0 Flash":  "google/gemini-2.0-flash-001",
-  // DeepSeek
-  "DeepSeek V3":       "deepseek/deepseek-chat",
-  // Qwen
-  "Qwen 3 Max":        "qwen/qwen-2.5-72b-instruct",
+  // "Grok 4.20":     "x-ai/grok-4.20", // pending API availability
 }
 
 export interface TradeDecision {
@@ -27,11 +20,7 @@ export interface TradeDecision {
 }
 
 interface OpenRouterResponse {
-  choices: Array<{
-    message: {
-      content: string
-    }
-  }>
+  choices: Array<{ message: { content: string } }>
 }
 
 export async function generateTradeDecision(
@@ -40,35 +29,32 @@ export async function generateTradeDecision(
   currentPrice: number
 ): Promise<TradeDecision> {
   const apiKey = process.env.OPENROUTER_API_KEY
-  if (!apiKey) {
-    throw new Error("OPENROUTER_API_KEY not configured")
-  }
+  if (!apiKey) throw new Error("OPENROUTER_API_KEY not configured")
 
   const modelId = MODEL_MAP[modelName]
-  if (!modelId) {
-    throw new Error(`Unknown model: ${modelName}`)
-  }
+  if (!modelId) throw new Error(`Unknown model: ${modelName}`)
 
-  const prompt = `You are ${modelName}, an AI trading model. Analyze ${asset} at current price $${currentPrice.toFixed(2)}.
+  const prompt = `You are ${modelName}, an elite AI trading agent competing in the LLM Arena.
+Analyze ${asset} at current price $${currentPrice.toFixed(2)}.
 
-Generate a simulated trade decision. Respond ONLY with valid JSON:
+Your mission: generate an optimal trade decision. Respond ONLY with valid JSON:
 {
   "direction": "LONG" or "SHORT",
   "leverage": number between 1-20,
-  "entryPrice": number (current price ±2%),
-  "exitPrice": number (target price based on your analysis),
-  "reasoning": "Brief 1-2 sentence trading rationale",
+  "entryPrice": number (current price ±1%),
+  "exitPrice": number (your target based on analysis),
+  "reasoning": "1-2 sentence technical rationale",
   "confidence": number 0-100
 }
 
-Consider: market momentum, volatility, risk/reward ratio. Be decisive.`
+Consider: momentum, volatility, risk/reward. Be decisive. Your P&L is tracked permanently.`
 
   const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
     method: "POST",
     headers: {
       "Authorization": `Bearer ${apiKey}`,
       "Content-Type": "application/json",
-      "HTTP-Referer": "https://battlecard-arena.vercel.app",
+      "HTTP-Referer": "https://llm-arena.raaptech.com",
       "X-Title": "LLM Trading Battle Arena"
     },
     body: JSON.stringify({
@@ -87,18 +73,12 @@ Consider: market momentum, volatility, risk/reward ratio. Be decisive.`
 
   const data: OpenRouterResponse = await response.json()
   const content = data.choices[0]?.message?.content
-
-  if (!content) {
-    throw new Error("No response from model")
-  }
+  if (!content) throw new Error("No response from model")
 
   const jsonMatch = content.match(/\{[\s\S]*\}/)
-  if (!jsonMatch) {
-    throw new Error("Could not parse trade decision")
-  }
+  if (!jsonMatch) throw new Error("Could not parse trade decision")
 
   const decision = JSON.parse(jsonMatch[0]) as TradeDecision
-
   return {
     direction: decision.direction === "SHORT" ? "SHORT" : "LONG",
     leverage: Math.min(Math.max(Math.round(decision.leverage), 1), 20),
