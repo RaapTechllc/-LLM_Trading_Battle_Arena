@@ -6,11 +6,18 @@
  *   - Kill switch: ARENA_KILL_SWITCH env var (global halt)
  *   - Per-agent halt: arenaAgent.haltedUntil (drawdown breach)
  *   - rawResponse access-controlled (stored in DB, not exposed in public API)
-   *   - strategyPrompt/agentMd excluded from public API endpoints
+ *   - strategyPrompt/agentMd excluded from public API endpoints
  *     (enforced here — single point; do NOT add shortcut routes without TopG review)
+ *
+ * v2.1 — Paper/Live Trading Mode Support
+ *   - SIMULATED: current behavior (LLM generates hypothetical trade data)
+ *   - PAPER: fetch real prices via CoinGecko, execute paper trades with slippage
+ *   - LIVE: blocked unless all gate checks pass (stub — future implementation)
  */
 
 import { prisma } from '@/lib/prisma'
+import { paperTradingService } from '@/lib/paper-trading'
+import { liveTradingGate } from '@/lib/live-trading-gate'
 import fs from 'fs'
 import path from 'path'
 
@@ -65,7 +72,14 @@ function readAgentSessionKey(tag: string): string | null {
 
 // ── Market Data ───────────────────────────────────────────────
 
-async function fetchMarketData(pairs: string[]): Promise<MarketData> {
+async function fetchMarketData(pairs: string[], tradingMode: string): Promise<MarketData> {
+  // In PAPER mode, use CoinGecko via PaperTradingService for consistency
+  if (tradingMode === 'PAPER') {
+    const prices = await paperTradingService.fetchPrices(pairs)
+    return { prices, changes24h: {}, timestamp: new Date().toISOString() }
+  }
+
+  // SIMULATED mode — use HyperLiquid (original behavior)
   const res = await fetch('https://api.hyperliquid.xyz/info', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -210,9 +224,11 @@ function checkRiskLimits(
 ): { passed: boolean; reason?: string } {
   if (decision.action === 'hold' || decision.action === 'close') return { passed: true }
 
+  // Position limit check (max 3 per agent)
   if (openPositionCount >= agent.riskMaxPositions)
     return { passed: false, reason: `Max positions (${agent.riskMaxPositions}) reached` }
 
+  // Exposure check (max 50% of balance)
   if (currentExposurePct + decision.size_pct > agent.riskMaxExposure)
     return { passed: false, reason: `Exposure cap ${(agent.riskMaxExposure * 100).toFixed(0)}% breached` }
 
@@ -220,10 +236,75 @@ function checkRiskLimits(
   if (lev > agent.riskMaxLeverage)
     return { passed: false, reason: `Leverage ${lev}x exceeds max ${agent.riskMaxLeverage}x` }
 
+  // Stop loss REQUIRED — reject trades without one
   if (agent.riskStopLossReq && (!decision.stop_loss_pct || decision.stop_loss_pct <= 0))
     return { passed: false, reason: 'Stop-loss required but not provided' }
 
   return { passed: true }
+}
+
+// ── Trade Execution by Mode ──────────────────────────────────
+
+async function executeTrade(
+  tradingMode: string,
+  entry: any,
+  round: any,
+  decision: TradeDecision,
+  marketData: MarketData,
+  riskPassed: boolean
+): Promise<{ tradeId: string | null }> {
+  const price = marketData.prices[decision.pair] ?? 0
+
+  if (tradingMode === 'PAPER') {
+    // PAPER mode: execute via PaperTradingService with real prices + slippage
+    const result = await paperTradingService.openPosition(
+      entry.id,
+      round.id,
+      decision.pair,
+      decision.action as 'long' | 'short',
+      entry.currentBalance * decision.size_pct,
+      decision.size_pct,
+      decision.leverage ?? 1,
+      decision.stop_loss_pct,
+      decision.take_profit_pct,
+      decision.reasoning,
+      decision.confidence,
+      riskPassed
+    )
+    return { tradeId: result.tradeId ?? null }
+  }
+
+  if (tradingMode === 'LIVE') {
+    // LIVE mode: blocked — stub for future implementation
+    console.warn('[Orchestrator] LIVE mode trade requested but not implemented — falling back to reject')
+    return { tradeId: null }
+  }
+
+  // SIMULATED mode: original behavior
+  const trade = await prisma.arenaTrade.create({
+    data: {
+      entryId: entry.id,
+      roundId: round.id,
+      pair: decision.pair,
+      side: decision.action,
+      entryPrice: price,
+      size: entry.currentBalance * decision.size_pct,
+      sizePct: decision.size_pct,
+      leverage: decision.leverage ?? 1,
+      stopLoss: decision.action === 'long'
+        ? price * (1 - decision.stop_loss_pct)
+        : price * (1 + decision.stop_loss_pct),
+      takeProfit: decision.action === 'long'
+        ? price * (1 + decision.take_profit_pct)
+        : price * (1 - decision.take_profit_pct),
+      reasoning: decision.reasoning,
+      confidence: decision.confidence,
+      riskCheckPassed: true,
+      executionMode: 'simulated',
+      status: 'open',
+    },
+  })
+  return { tradeId: trade.id }
 }
 
 // ── Round Runner ──────────────────────────────────────────────
@@ -245,8 +326,30 @@ export async function runArenaRound(seasonId: string): Promise<{ roundId: string
   })
   if (!season) throw new Error(`Season ${seasonId} not found`)
 
+  const tradingMode = season.tradingMode // SIMULATED | PAPER | LIVE
+
+  // LIVE mode gate check
+  if (tradingMode === 'LIVE') {
+    for (const entry of season.entries) {
+      const gate = await liveTradingGate.canGoLive(entry.agentId)
+      if (!gate.canGoLive) {
+        throw new Error(
+          `Cannot run LIVE round: agent ${entry.agent.tag} blocked — ${gate.reasons.join('; ')}`
+        )
+      }
+    }
+  }
+
+  // In PAPER mode, check stop losses and take profits before running new round
+  if (tradingMode === 'PAPER') {
+    const stopsResult = await paperTradingService.checkStopsAndTargets(seasonId)
+    if (stopsResult.closed > 0) {
+      console.log(`[Orchestrator] Paper mode: auto-closed ${stopsResult.closed} trades (stops/targets hit)`)
+    }
+  }
+
   const pairs = season.tradingPairs.split(',').map(p => `${p.trim()}-USD`)
-  const marketData = await fetchMarketData(pairs)
+  const marketData = await fetchMarketData(pairs, tradingMode)
 
   const lastRound = await prisma.arenaRound.findFirst({
     where: { seasonId },
@@ -308,6 +411,7 @@ export async function runArenaRound(seasonId: string): Promise<{ roundId: string
       const { decision, rawResponse, latencyMs, tokensUsed } = decResult
       const risk = checkRiskLimits(decision, agent, openPositionCount, exposurePct)
 
+      // Log risk check result in decision record
       await prisma.arenaRoundDecision.create({
         data: {
           roundId: round.id, entryId: entry.id,
@@ -322,28 +426,48 @@ export async function runArenaRound(seasonId: string): Promise<{ roundId: string
       })
 
       if (risk.passed && decision.action !== 'hold') {
-        const price = marketData.prices[decision.pair] ?? 0
-        await prisma.arenaTrade.create({
-          data: {
-            entryId: entry.id, roundId: round.id,
-            pair: decision.pair, side: decision.action,
-            entryPrice: price,
-            size: entry.currentBalance * decision.size_pct,
-            sizePct: decision.size_pct,
-            leverage: decision.leverage ?? 1,
-            stopLoss: decision.action === 'long'
-              ? price * (1 - decision.stop_loss_pct)
-              : price * (1 + decision.stop_loss_pct),
-            takeProfit: decision.action === 'long'
-              ? price * (1 + decision.take_profit_pct)
-              : price * (1 - decision.take_profit_pct),
-            reasoning: decision.reasoning,
-            confidence: decision.confidence,
-            riskCheckPassed: true,
-            status: 'open',
-          },
-        })
-        decisionsCount++
+        if (decision.action === 'close') {
+          // Close existing positions for the pair
+          const openTrades = entry.trades.filter(t => t.pair === decision.pair)
+          for (const trade of openTrades) {
+            if (tradingMode === 'PAPER') {
+              await paperTradingService.closePosition(trade.id)
+            } else {
+              // Simulated close — just mark as closed
+              const exitPrice = marketData.prices[trade.pair] ?? trade.entryPrice
+              const priceDiff = trade.side === 'long'
+                ? exitPrice - trade.entryPrice
+                : trade.entryPrice - exitPrice
+              const pnl = (priceDiff / trade.entryPrice) * trade.size * trade.leverage
+              const pnlPct = (priceDiff / trade.entryPrice) * 100 * trade.leverage
+
+              await prisma.arenaTrade.update({
+                where: { id: trade.id },
+                data: {
+                  exitPrice, pnl, pnlPct,
+                  status: 'closed', closedAt: new Date(),
+                  executionMode: 'simulated',
+                },
+              })
+
+              await prisma.arenaSeasonEntry.update({
+                where: { id: entry.id },
+                data: {
+                  currentBalance: { increment: pnl },
+                  totalPnl: { increment: pnl },
+                  realizedPnl: { increment: pnl },
+                  totalTrades: { increment: 1 },
+                  ...(pnl >= 0 ? { winCount: { increment: 1 } } : { lossCount: { increment: 1 } }),
+                },
+              })
+            }
+          }
+          decisionsCount++
+        } else {
+          // Open new position
+          const result = await executeTrade(tradingMode, entry, round, decision, marketData, risk.passed)
+          if (result.tradeId) decisionsCount++
+        }
       }
     })
   )
@@ -352,6 +476,14 @@ export async function runArenaRound(seasonId: string): Promise<{ roundId: string
     where: { id: round.id },
     data: { status: 'completed', completedAt: new Date() },
   })
+
+  // Post-round: enforce drawdown limits in paper/live modes
+  if (tradingMode === 'PAPER' || tradingMode === 'LIVE') {
+    const { halted } = await liveTradingGate.enforceDrawdownLimits()
+    if (halted.length > 0) {
+      console.log(`[Orchestrator] Post-round drawdown enforcement halted ${halted.length} agents`)
+    }
+  }
 
   return { roundId: round.id, decisionsCount }
 }

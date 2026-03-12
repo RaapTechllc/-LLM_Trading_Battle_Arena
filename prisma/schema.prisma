@@ -274,6 +274,13 @@ model ModelBattle {
 // Atlas schema spec 2026-02-19
 // ──────────────────────────────────────────────
 
+// ── Trading Mode ────────────────────────────────────────────
+enum TradingMode {
+  SIMULATED   // Current behavior — LLM generates hypothetical trades
+  PAPER       // Connects to real market data, executes paper trades with real prices
+  LIVE        // Real money (gated, requires manual approval)
+}
+
 model ArenaAgent {
   id               String   @id @default(cuid())
   tag              String   @unique    // [DMN], [ATL], [GPT], etc.
@@ -288,6 +295,7 @@ model ArenaAgent {
   riskMaxLeverage  Float    @default(5.0)
   riskMaxPositions Int      @default(3)
   riskStopLossReq  Boolean  @default(true)
+  liveApproved     Boolean  @default(false)  // Manual Kyle approval for LIVE trading
   isActive         Boolean  @default(true)
   haltedUntil      DateTime?           // per-agent halt on drawdown breach (TopG note 3)
   createdAt        DateTime @default(now())
@@ -303,6 +311,8 @@ model ArenaSeason {
   name             String
   roundIntervalMin Int      @default(240)  // 4h default
   tradingPairs     String   @default("BTC,ETH,SOL")  // comma-sep
+  tradingMode      TradingMode @default(SIMULATED)
+  paperBroker      String?     // e.g. "coinbase", "alpaca", "binance"
   isActive         Boolean  @default(true)
   startedAt        DateTime @default(now())
   endedAt          DateTime?
@@ -358,6 +368,10 @@ model ArenaTrade {
   confidence       Float?
   riskCheckPassed  Boolean  @default(true)
   killSwitchActive Boolean  @default(false)
+  executionMode    String   @default("simulated")  // simulated, paper, live
+  externalOrderId  String?   // Paper/live trade reference from broker
+  executedPrice    Float?    // Actual fill price (paper/live)
+  slippage         Float?    // Difference between intended and executed price
   status           String   @default("open")  // open, closed, stopped, liquidated, rejected
   openedAt         DateTime @default(now())
   closedAt         DateTime?
