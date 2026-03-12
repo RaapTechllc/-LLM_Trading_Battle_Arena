@@ -42,7 +42,7 @@ export default function AutoTradeButton() {
       <button
         onClick={runAutoTrade}
         disabled={isRunning}
-        className="px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-black tracking-widest uppercase rounded-full hover:scale-105 transition-all disabled:opacity-50 disabled:hover:scale-100 shadow-[0_0_30px_rgba(139,92,246,0.3)]"
+        className="px-8 py-4 border border-[#00d4ff] bg-transparent text-[#00d4ff] hover:bg-[#00d4ff] hover:text-black font-black tracking-widest uppercase rounded-none hover:scale-105 transition-all disabled:opacity-50 disabled:hover:scale-100 shadow-[0_0_30px_rgba(0,212,255,0.2)]"
       >
         {isRunning ? (
           <span className="flex items-center gap-2">

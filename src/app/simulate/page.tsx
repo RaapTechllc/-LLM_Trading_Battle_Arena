@@ -2,7 +2,7 @@ import TradeSimulator from '@/components/TradeSimulator'
 
 export default function SimulatePage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900">
+    <div className="min-h-screen bg-[#020204]">
       {/* Educational Disclaimer */}
       <div className="bg-yellow-100 border-l-4 border-yellow-500 p-4">
         <div className="flex">

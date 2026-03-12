@@ -190,7 +190,7 @@ export default function BattleArena() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 flex items-center justify-center">
+      <div className="min-h-screen bg-[#020204] flex items-center justify-center">
         <div className="text-white text-xl">Loading battle arena...</div>
       </div>
     )
@@ -198,7 +198,7 @@ export default function BattleArena() {
 
   if (cards.length === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900">
+      <div className="min-h-screen bg-[#020204]">
         <div className="container mx-auto px-4 py-8">
           <div className="max-w-4xl mx-auto">
             <h1 className="text-4xl font-bold text-white text-center mb-8">
@@ -214,7 +214,7 @@ export default function BattleArena() {
               </p>
               <a
                 href="/create-card"
-                className="inline-block bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-105"
+                className="inline-block border border-[#00d4ff] bg-transparent text-[#00d4ff] hover:bg-[#00d4ff] hover:text-black font-bold py-3 px-6 rounded-none transition-all duration-200 transform hover:scale-105"
               >
                 Create Your First Card
               </a>
@@ -226,7 +226,7 @@ export default function BattleArena() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900">
+    <div className="min-h-screen bg-[#020204]">
       {/* Achievement Notifications */}
       <AchievementNotification 
         achievementIds={newAchievements}
@@ -251,7 +251,7 @@ export default function BattleArena() {
                         setSelectedOpponent(null)
                         setShowOpponentSelector(true)
                       }}
-                      className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold py-4 px-6 rounded-lg transition-all duration-200 transform hover:scale-105"
+                      className="flex-1 border border-[#00d4ff] bg-transparent text-[#00d4ff] hover:bg-[#00d4ff] hover:text-black font-bold py-4 px-6 rounded-none transition-all duration-200 transform hover:scale-105"
                     >
                       <span className="model-tag">[RND]</span>
                       <div>Quick Battle</div>
@@ -445,7 +445,7 @@ export default function BattleArena() {
                 </p>
                 <button
                   onClick={resetBattle}
-                  className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-105"
+                  className="border border-[#00d4ff] bg-transparent text-[#00d4ff] hover:bg-[#00d4ff] hover:text-black font-bold py-3 px-6 rounded-none transition-all duration-200 transform hover:scale-105"
                 >
                   Battle Again
                 </button>

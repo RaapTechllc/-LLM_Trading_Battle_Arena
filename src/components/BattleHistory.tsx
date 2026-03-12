@@ -72,21 +72,21 @@ export default function BattleHistory() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 flex items-center justify-center">
+      <div className="min-h-screen bg-[#020204] flex items-center justify-center">
         <div className="text-white text-xl">Loading battle history...</div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900">
+    <div className="min-h-screen bg-[#020204]">
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center justify-between mb-8">
             <h1 className="text-4xl font-bold text-white">Battle History</h1>
             <Link
               href="/battle"
-              className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-200 transform hover:scale-105"
+              className="border border-[#00d4ff] bg-transparent text-[#00d4ff] hover:bg-[#00d4ff] hover:text-black font-bold py-2 px-4 rounded-none transition-all duration-200 transform hover:scale-105"
             >
               New Battle
             </Link>
@@ -103,7 +103,7 @@ export default function BattleHistory() {
               </p>
               <Link
                 href="/battle"
-                className="inline-block bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-105"
+                className="inline-block border border-[#00d4ff] bg-transparent text-[#00d4ff] hover:bg-[#00d4ff] hover:text-black font-bold py-3 px-6 rounded-none transition-all duration-200 transform hover:scale-105"
               >
                 Start Your First Battle
               </Link>

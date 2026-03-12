@@ -303,7 +303,7 @@ export default function TradeSimulator() {
               type="button"
               onClick={generateAITrade}
               disabled={isGenerating}
-              className="flex-1 h-14 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-bold tracking-widest text-xs uppercase rounded-full hover:scale-105 transition-all disabled:opacity-50 disabled:hover:scale-100"
+              className="flex-1 h-14 border border-[#00d4ff] bg-transparent text-[#00d4ff] hover:bg-[#00d4ff] hover:text-black font-bold tracking-widest text-xs uppercase rounded-none hover:scale-105 transition-all disabled:opacity-50 disabled:hover:scale-100"
             >
               {isGenerating ? '🤖 THINKING...' : '🤖 LET AI DECIDE'}
             </button>

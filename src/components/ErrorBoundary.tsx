@@ -34,7 +34,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
       }
 
       return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 flex items-center justify-center">
+        <div className="min-h-screen bg-[#020204] flex items-center justify-center">
           <div className="max-w-md mx-auto bg-white/10 backdrop-blur-sm rounded-lg p-8 border border-white/20 text-center">
             <div className="label-mono" style={{color:"var(--loss-red)",fontSize:"1.25rem",marginBottom:"1rem"}}>[!] SYSTEM ERROR</div>
             <h2 className="text-2xl font-bold text-white mb-4">
@@ -46,7 +46,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
             <div className="space-y-3">
               <button
                 onClick={() => this.setState({ hasError: false })}
-                className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-all duration-200"
+                className="w-full border border-[#00d4ff] bg-transparent text-[#00d4ff] hover:bg-[#00d4ff] hover:text-black font-bold py-3 px-6 rounded-none transition-all duration-200"
               >
                 Try Again
               </button>

@@ -155,7 +155,7 @@ export default function DeckBuilderPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center">
+      <div className="min-h-screen bg-[#020204] flex items-center justify-center">
         <div className="text-white text-xl">Loading deck builder...</div>
       </div>
     );
@@ -164,7 +164,7 @@ export default function DeckBuilderPage() {
   const stats = getDeckStats();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
+    <div className="min-h-screen bg-[#020204]">
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-7xl mx-auto">
           <h1 className="text-4xl font-bold text-white text-center mb-8">

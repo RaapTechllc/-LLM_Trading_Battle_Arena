@@ -204,7 +204,7 @@ export default function LiveShowdown() {
           )}
 
           <button onClick={startBattle} disabled={isLoading || !model1 || !model2}
-            className="w-full py-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-black tracking-widest uppercase rounded-full hover:scale-105 transition-all disabled:opacity-50">
+            className="w-full py-4 border border-[#00d4ff] bg-transparent text-[#00d4ff] hover:bg-[#00d4ff] hover:text-black font-black tracking-widest uppercase rounded-none hover:scale-105 transition-all disabled:opacity-50">
             START LIVE BATTLE
           </button>
         </div>

@@ -46,7 +46,7 @@ export const PNL_COLORS = {
 export const RARITY_EFFECTS = {
   COMMON:    "border-gray-400",
   RARE:      "border-blue-400",
-  EPIC:      "border-purple-400",
+  EPIC:      "border-[#00d4ff]",
   LEGENDARY: "border-yellow-400 ring-2 ring-yellow-400/30",
 } as const;
 

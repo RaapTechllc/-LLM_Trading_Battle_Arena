@@ -48,7 +48,7 @@ export function BattleEffect({ effect, duration = 2000, onComplete }: BattleEffe
       case 'DEFEND':
         return 'text-blue-400'
       case 'MAGIC':
-        return 'text-purple-400'
+        return 'text-[#00d4ff]'
       case 'CRITICAL':
         return 'text-yellow-400'
       case 'VICTORY':

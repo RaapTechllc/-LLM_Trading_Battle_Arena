@@ -178,7 +178,7 @@ export default function DemoScript() {
       <div className="fixed bottom-4 right-4 z-50">
         <button
           onClick={startDemo}
-          className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition-all duration-200 transform hover:scale-105"
+          className="border border-[#00d4ff] bg-transparent text-[#00d4ff] hover:bg-[#00d4ff] hover:text-black font-bold py-3 px-6 shadow-[0_0_30px_rgba(0,212,255,0.2)] rounded-none transition-all duration-200 transform hover:scale-105"
         >
           🎬 Start Demo
         </button>
@@ -196,7 +196,7 @@ export default function DemoScript() {
         {/* Progress Bar */}
         <div className="w-full bg-gray-700 rounded-full h-2 mb-3">
           <div 
-            className="bg-gradient-to-r from-purple-600 to-blue-600 h-2 rounded-full transition-all duration-300"
+            className="bg-[#00d4ff] h-2 rounded-full transition-all duration-300"
             style={{ width: `${progress}%` }}
           />
         </div>
