@@ -26,6 +26,10 @@
   --loss-red:      #ff2240;
   --neutral-amber: #ffa500;
 
+  /* Nav */
+  --nav-bg:        rgba(5,5,5,0.95);
+  --nav-border:    #00d4ff22;
+
   /* Legacy aliases (keep for components not yet migrated) */
   --bg-primary:    var(--void-abyss);
   --bg-card:       var(--void-deep);
@@ -35,6 +39,46 @@
   --text-primary:  var(--signal-white);
   --text-secondary: var(--signal-mute);
   --text-muted:    #3a4055;
+  --cyan:          var(--signal-cyan);
+  --profit:        var(--profit-green);
+  --loss:          var(--loss-red);
+}
+
+/* ─── LIGHT MODE — Tesla-minimal ─── */
+[data-theme="light"] {
+  /* Void Layer → Light surfaces */
+  --void-abyss:    #f5f5f5;
+  --void-deep:     #ffffff;
+  --void-surface:  #f0f0f2;
+
+  /* Grid Layer → Light borders */
+  --grid-dim:      #f0f0f2;
+  --grid-line:     #e5e7eb;
+  --grid-glow:     #d1d5db;
+
+  /* Signal Layer → Dark text */
+  --signal-cyan:   #00d4ff;
+  --signal-white:  #111827;
+  --signal-mute:   #6b7280;
+
+  /* Outcome Layer — same in both modes */
+  --profit-green:  #00cc6a;
+  --loss-red:      #ef4444;
+  --neutral-amber: #f59e0b;
+
+  /* Nav */
+  --nav-bg:        rgba(255,255,255,0.95);
+  --nav-border:    #e5e7eb;
+
+  /* Legacy aliases */
+  --bg-primary:    var(--void-abyss);
+  --bg-card:       var(--void-deep);
+  --bg-hover:      var(--void-surface);
+  --border-subtle: var(--grid-line);
+  --border-hover:  var(--grid-glow);
+  --text-primary:  var(--signal-white);
+  --text-secondary: var(--signal-mute);
+  --text-muted:    #9ca3af;
   --cyan:          var(--signal-cyan);
   --profit:        var(--profit-green);
   --loss:          var(--loss-red);
@@ -70,6 +114,24 @@ html, body {
     );
 }
 
+[data-theme="light"] .grid-bg {
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 59px,
+      rgba(0,0,0,0.04) 59px,
+      rgba(0,0,0,0.04) 60px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 59px,
+      rgba(0,0,0,0.04) 59px,
+      rgba(0,0,0,0.04) 60px
+    );
+}
+
 /* ─── SCANLINE ─── */
 .scanline::before {
   content: '';
@@ -84,6 +146,11 @@ html, body {
   );
   pointer-events: none;
   z-index: 9998;
+}
+
+/* No scanline effect in light mode */
+[data-theme="light"] .scanline::before {
+  display: none;
 }
 
 /* ─── NAV ─── */
@@ -139,6 +206,11 @@ html, body {
   border-radius: 0;
   text-transform: uppercase;
   white-space: nowrap;
+}
+
+[data-theme="light"] .model-tag {
+  background: rgba(0,212,255,0.08);
+  border-color: rgba(0,212,255,0.25);
 }
 
 /* ─── LABEL ─── */
@@ -314,7 +386,200 @@ html, body {
   animation: shimmer 1.5s ease-in-out infinite;
 }
 
+[data-theme="light"] .skeleton {
+  background: linear-gradient(90deg, #f0f0f2 25%, #e5e7eb 50%, #f0f0f2 75%);
+  background-size: 400px 100%;
+}
+
 /* ─── BG ALIASES (Tailwind compat) ─── */
 .bg-card      { background: var(--void-deep); }
 .border-subtle { border-color: var(--grid-line); }
 .stats-row    { display: flex; gap: 1rem; flex-wrap: wrap; }
+
+/* ─── LIGHT MODE OVERRIDES for hardcoded Tailwind bg values ─── */
+[data-theme="light"] .bg-\[\#020204\] {
+  background-color: var(--void-abyss) !important;
+}
+[data-theme="light"] .bg-\[\#0a0a0a\] {
+  background-color: var(--void-abyss) !important;
+}
+[data-theme="light"] .bg-\[\#050508\] {
+  background-color: var(--void-deep) !important;
+}
+[data-theme="light"] .bg-\[\#0a0a10\] {
+  background-color: var(--void-surface) !important;
+}
+[data-theme="light"] .bg-\[\#0d1117\] {
+  background-color: var(--grid-dim) !important;
+}
+
+/* Override hardcoded dark text colors in light mode */
+[data-theme="light"] .text-\[\#e0e6f0\] {
+  color: var(--signal-white) !important;
+}
+[data-theme="light"] .text-white {
+  color: var(--signal-white) !important;
+}
+[data-theme="light"] .text-\[\#5a6580\] {
+  color: var(--signal-mute) !important;
+}
+
+/* Override hardcoded dark border colors in light mode */
+[data-theme="light"] .border-\[\#1a1f2e\] {
+  border-color: var(--grid-line) !important;
+}
+[data-theme="light"] .border-\[\#2a3040\] {
+  border-color: var(--grid-glow) !important;
+}
+
+/* Status bar background — uses var for theme support */
+.status-bar-bg {
+  background: var(--nav-bg);
+}
+
+
+/* ─── LIGHT MODE: Tailwind utility class overrides ─── */
+
+/* White text with opacity → dark text with opacity */
+[data-theme="light"] .text-white\/60 {
+  color: rgba(17, 24, 39, 0.6) !important;
+}
+[data-theme="light"] .text-white\/80 {
+  color: rgba(17, 24, 39, 0.8) !important;
+}
+[data-theme="light"] .text-white\/10 {
+  color: rgba(17, 24, 39, 0.1) !important;
+}
+
+/* Gray text — keep readable */
+[data-theme="light"] .text-gray-400 {
+  color: #6b7280 !important;
+}
+[data-theme="light"] .text-gray-300 {
+  color: #4b5563 !important;
+}
+[data-theme="light"] .text-gray-500 {
+  color: #6b7280 !important;
+}
+
+/* White bg overlays → subtle gray overlays */
+[data-theme="light"] .bg-white\/5 {
+  background-color: rgba(0, 0, 0, 0.02) !important;
+}
+[data-theme="light"] .bg-white\/10 {
+  background-color: rgba(0, 0, 0, 0.04) !important;
+}
+[data-theme="light"] .bg-white\/20 {
+  background-color: rgba(0, 0, 0, 0.06) !important;
+}
+
+/* Black bg overlays → light overlays */
+[data-theme="light"] .bg-black\/20 {
+  background-color: rgba(0, 0, 0, 0.04) !important;
+}
+[data-theme="light"] .bg-black\/30 {
+  background-color: rgba(0, 0, 0, 0.06) !important;
+}
+[data-theme="light"] .bg-black\/80 {
+  background-color: rgba(255, 255, 255, 0.85) !important;
+}
+[data-theme="light"] .bg-black\/90 {
+  background-color: rgba(255, 255, 255, 0.92) !important;
+}
+[data-theme="light"] .bg-black {
+  background-color: var(--void-abyss) !important;
+}
+
+/* Gray backgrounds → light alternatives */
+[data-theme="light"] .bg-gray-800\/50 {
+  background-color: rgba(243, 244, 246, 0.8) !important;
+}
+[data-theme="light"] .bg-gray-800 {
+  background-color: #f3f4f6 !important;
+}
+[data-theme="light"] .bg-gray-700 {
+  background-color: #e5e7eb !important;
+}
+[data-theme="light"] .bg-gray-600 {
+  background-color: #d1d5db !important;
+}
+[data-theme="light"] .bg-slate-800 {
+  background-color: #f3f4f6 !important;
+}
+[data-theme="light"] .bg-slate-700 {
+  background-color: #e5e7eb !important;
+}
+
+/* Border overrides */
+[data-theme="light"] .border-white\/10 {
+  border-color: rgba(0, 0, 0, 0.06) !important;
+}
+[data-theme="light"] .border-white\/20 {
+  border-color: rgba(0, 0, 0, 0.1) !important;
+}
+[data-theme="light"] .border-white\/30 {
+  border-color: rgba(0, 0, 0, 0.12) !important;
+}
+[data-theme="light"] .border-white\/5 {
+  border-color: rgba(0, 0, 0, 0.03) !important;
+}
+[data-theme="light"] .border-white {
+  border-color: var(--grid-line) !important;
+}
+[data-theme="light"] .border-gray-700 {
+  border-color: #e5e7eb !important;
+}
+[data-theme="light"] .border-gray-400 {
+  border-color: #d1d5db !important;
+}
+
+/* Hover states for slate buttons */
+[data-theme="light"] .hover\:bg-slate-600:hover {
+  background-color: #d1d5db !important;
+}
+[data-theme="light"] .disabled\:bg-slate-800:disabled {
+  background-color: #f3f4f6 !important;
+}
+[data-theme="light"] .disabled\:text-slate-500:disabled {
+  color: #9ca3af !important;
+}
+
+/* Gradient overrides: from-gray-900 to-black (account page) */
+[data-theme="light"] .from-gray-900 {
+  --tw-gradient-from: #f5f5f5 !important;
+}
+[data-theme="light"] .to-black {
+  --tw-gradient-to: #ebebeb !important;
+}
+
+/* Green/red text (account P&L) */
+[data-theme="light"] .text-green-400 {
+  color: #059669 !important;
+}
+[data-theme="light"] .text-red-400 {
+  color: #dc2626 !important;
+}
+
+/* Blue info boxes */
+[data-theme="light"] .bg-blue-900\/20 {
+  background-color: rgba(219, 234, 254, 0.6) !important;
+}
+[data-theme="light"] .border-blue-500 {
+  border-color: #93c5fd !important;
+}
+[data-theme="light"] .text-blue-400 {
+  color: #2563eb !important;
+}
+
+/* Red error boxes */
+[data-theme="light"] .bg-red-900\/20 {
+  background-color: rgba(254, 226, 226, 0.6) !important;
+}
+[data-theme="light"] .border-red-500 {
+  border-color: #fca5a5 !important;
+}
+
+/* Shadow overrides for light mode */
+[data-theme="light"] .shadow-\[0_0_30px_rgba\(0\,212\,255\,0\.2\)\] {
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.15) !important;
+}

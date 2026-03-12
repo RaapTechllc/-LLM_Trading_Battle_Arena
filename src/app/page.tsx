@@ -13,7 +13,7 @@ export default function HomePage() {
       {/* ── STATUS BAR ── */}
       <div style={{
         borderBottom: '1px solid var(--grid-line)',
-        background: 'rgba(2,2,4,0.95)',
+        background: 'var(--nav-bg)',
         padding: '0.375rem 1.5rem',
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
         overflow: 'hidden', whiteSpace: 'nowrap',

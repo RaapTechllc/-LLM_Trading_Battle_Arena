@@ -80,27 +80,34 @@ export function TradeCard({
       }}
     >
       {/* ── Header ── */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem', gap: '0.75rem' }}>
+        {/* Left: model info — allow truncation */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', minWidth: 0, overflow: 'hidden' }}>
           <span className="model-tag">{modelAvatar}</span>
-          <div>
+          <div style={{ minWidth: 0 }}>
             <div style={{
               fontFamily: "'Inter', sans-serif",
               fontWeight: 600,
               fontSize: '0.8125rem',
               color: 'var(--signal-white)',
               lineHeight: 1.2,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
             }}>
               {modelName}
             </div>
             <div className="label-mono" style={{ marginTop: '0.125rem' }}>AI AGENT</div>
           </div>
         </div>
+        {/* Right: rarity badge — never shrink */}
         <div className="label-mono" style={{
           border: `1px solid ${rarityTop}44`,
           color: rarityTop,
           background: `${rarityTop}11`,
           padding: '0.2rem 0.5rem',
+          flexShrink: 0,
+          whiteSpace: 'nowrap',
         }}>
           {rarity}
         </div>
