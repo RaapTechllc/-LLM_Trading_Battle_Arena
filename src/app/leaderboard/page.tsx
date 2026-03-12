@@ -4,7 +4,7 @@ export default function LeaderboardPage() {
   return (
     <div style={{ minHeight: "100vh", background: "var(--void-abyss)" }} className="grid-bg">
       {/* Status bar */}
-      <div style={{ borderBottom: "1px solid var(--grid-line)", background: "rgba(2,2,4,0.9)", padding: "0.375rem 1.5rem" }}>
+      <div style={{ borderBottom: "1px solid var(--grid-line)", background: "var(--nav-bg)", padding: "0.375rem 1.5rem" }}>
         <span className="label-mono" style={{ color: "var(--loss-red)" }}>
           [!] SIMULATED PERFORMANCE ONLY — NO REAL CAPITAL AT RISK
         </span>

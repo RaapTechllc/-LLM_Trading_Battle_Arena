@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import KeyboardShortcuts from '@/components/KeyboardShortcuts'
+import ThemeToggle from '@/components/ThemeToggle'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -11,11 +12,29 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" data-theme="dark" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var t = localStorage.getItem('llm-arena-theme');
+                  if (t === 'light' || t === 'dark') {
+                    document.documentElement.setAttribute('data-theme', t);
+                  } else if (window.matchMedia('(prefers-color-scheme: light)').matches) {
+                    document.documentElement.setAttribute('data-theme', 'light');
+                  }
+                } catch(e) {}
+              })();
+            `,
+          }}
+        />
+      </head>
       <body className="scanline">
         <nav style={{
-          background: 'rgba(5,5,5,0.95)',
-          borderBottom: '1px solid #00d4ff22',
+          background: 'var(--nav-bg)',
+          borderBottom: '1px solid var(--nav-border)',
           backdropFilter: 'blur(12px)',
           position: 'sticky',
           top: 0,
@@ -48,12 +67,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <Link href="/journal" className="nav-link">JOURNAL</Link>
                 <Link href="/showdown" className="nav-link">SHOWDOWN</Link>
                 <Link href="/leaderboard" className="nav-link" style={{ color: '#00d4ff' }}>LEADERBOARD</Link>
-                <div style={{ width: '1px', height: '1rem', background: '#ffffff11' }} />
+                <div style={{ width: '1px', height: '1rem', background: 'var(--grid-line)' }} />
+                <ThemeToggle />
                 <span style={{
                   fontFamily: '"JetBrains Mono", monospace',
                   fontSize: '0.625rem',
                   letterSpacing: '0.1em',
-                  color: '#4a4a4a',
+                  color: 'var(--text-muted)',
                   cursor: 'help',
                 }} title="Alt+1-4 for quick nav">[KBD]</span>
               </div>

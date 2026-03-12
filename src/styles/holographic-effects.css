@@ -31,7 +31,7 @@
   transform: translateX(100%) translateY(100%) rotate(45deg);
 }
 
-/* Base card glows */
+/* ─── Dark mode card glows ─── */
 .holographic-common {
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 20px rgba(100, 116, 139, 0.1);
 }
@@ -46,6 +46,23 @@
 
 .holographic-legendary {
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 60px rgba(245, 158, 11, 0.4);
+}
+
+/* ─── Light mode card glows ─── */
+[data-theme="light"] .holographic-common {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(0, 0, 0, 0.04);
+}
+
+[data-theme="light"] .holographic-rare {
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08), 0 0 20px rgba(0, 212, 255, 0.12);
+}
+
+[data-theme="light"] .holographic-epic {
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08), 0 0 24px rgba(168, 85, 247, 0.15);
+}
+
+[data-theme="light"] .holographic-legendary {
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.08), 0 0 32px rgba(245, 158, 11, 0.2), 0 0 60px rgba(245, 158, 11, 0.08);
 }
 
 /* Legendary Holographic Shift */
@@ -73,6 +90,17 @@
   opacity: 1;
 }
 
+/* Light mode: softer legendary overlay, use overlay blend instead of color-dodge */
+[data-theme="light"] .holographic-legendary::after {
+  background: linear-gradient(125deg,
+      rgba(245, 158, 11, 0.06) 0%,
+      rgba(251, 191, 36, 0.1) 25%,
+      rgba(245, 158, 11, 0.06) 50%,
+      rgba(251, 191, 36, 0.1) 75%,
+      rgba(245, 158, 11, 0.06) 100%);
+  mix-blend-mode: multiply;
+}
+
 /* Epic Prism Effect */
 .holographic-epic::after {
   content: '';
@@ -93,6 +121,14 @@
 
 .holographic-epic:hover::after {
   opacity: 1;
+}
+
+/* Light mode: gentler epic prism */
+[data-theme="light"] .holographic-epic::after {
+  background: linear-gradient(45deg,
+      transparent 40%,
+      rgba(168, 85, 247, 0.12) 50%,
+      transparent 60%);
 }
 
 @keyframes holo-shift {
@@ -129,4 +165,17 @@
   pointer-events: none;
   border-radius: inherit;
   z-index: 2;
+}
+
+/* Light mode: reduce noise even more */
+[data-theme="light"] .holographic-card::before {
+  opacity: 0.015;
+}
+
+/* Light mode foil shine: slightly more visible */
+[data-theme="light"] .holographic-card .foil-shine {
+  background: linear-gradient(45deg,
+      transparent 30%,
+      rgba(0, 0, 0, 0.04) 50%,
+      transparent 70%);
 }
