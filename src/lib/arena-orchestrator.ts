@@ -16,8 +16,7 @@
  */
 
 import { prisma } from '@/lib/prisma'
-import { paperTradingService } from '@/lib/paper-trading'
-import { liveTradingGate } from '@/lib/live-trading-gate'
+import { PaperTradingService } from '@/lib/paper-trading'
 import fs from 'fs'
 import path from 'path'
 
@@ -37,6 +36,8 @@ interface MarketData {
   changes24h: Record<string, number>
   timestamp: string
 }
+
+const paperTradingService = new PaperTradingService()
 
 // ── Kill Switch (global + per-agent) ─────────────────────────
 
@@ -275,9 +276,7 @@ async function executeTrade(
   }
 
   if (tradingMode === 'LIVE') {
-    // LIVE mode: blocked — stub for future implementation
-    console.warn('[Orchestrator] LIVE mode trade requested but not implemented — falling back to reject')
-    return { tradeId: null }
+    throw new Error('Live trading not yet enabled')
   }
 
   // SIMULATED mode: original behavior
@@ -328,16 +327,8 @@ export async function runArenaRound(seasonId: string): Promise<{ roundId: string
 
   const tradingMode = season.tradingMode // SIMULATED | PAPER | LIVE
 
-  // LIVE mode gate check
   if (tradingMode === 'LIVE') {
-    for (const entry of season.entries) {
-      const gate = await liveTradingGate.canGoLive(entry.agentId)
-      if (!gate.canGoLive) {
-        throw new Error(
-          `Cannot run LIVE round: agent ${entry.agent.tag} blocked — ${gate.reasons.join('; ')}`
-        )
-      }
-    }
+    throw new Error('Live trading not yet enabled')
   }
 
   // In PAPER mode, check stop losses and take profits before running new round
@@ -476,14 +467,6 @@ export async function runArenaRound(seasonId: string): Promise<{ roundId: string
     where: { id: round.id },
     data: { status: 'completed', completedAt: new Date() },
   })
-
-  // Post-round: enforce drawdown limits in paper/live modes
-  if (tradingMode === 'PAPER' || tradingMode === 'LIVE') {
-    const { halted } = await liveTradingGate.enforceDrawdownLimits()
-    if (halted.length > 0) {
-      console.log(`[Orchestrator] Post-round drawdown enforcement halted ${halted.length} agents`)
-    }
-  }
 
   return { roundId: round.id, decisionsCount }
 }

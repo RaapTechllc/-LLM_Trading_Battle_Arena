@@ -6,7 +6,6 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { liveTradingGate } from '@/lib/live-trading-gate'
 
 // Simple token auth for Arena API endpoints
 function checkAuth(req: NextRequest): boolean {
@@ -85,45 +84,9 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: 'Season not found' }, { status: 404 })
     }
 
-    // LIVE mode requires separate approval — cannot switch directly
+    // LIVE mode not yet enabled
     if (tradingMode === 'LIVE') {
-      // Check ALL agents in this season have liveApproved
-      const entries = await prisma.arenaSeasonEntry.findMany({
-        where: { seasonId: season.id },
-        include: { agent: true },
-      })
-
-      const unapproved = entries.filter(e => !e.agent.liveApproved)
-      if (unapproved.length > 0) {
-        return NextResponse.json({
-          error: 'Cannot switch to LIVE mode — agents not approved',
-          unapprovedAgents: unapproved.map(e => ({
-            id: e.agent.id,
-            tag: e.agent.tag,
-            name: e.agent.name,
-          })),
-        }, { status: 403 })
-      }
-
-      // Run gate checks on all agents
-      const gateResults = await Promise.all(
-        entries.map(async (e) => ({
-          agentTag: e.agent.tag,
-          ...(await liveTradingGate.canGoLive(e.agentId)),
-        }))
-      )
-
-      const blocked = gateResults.filter(r => !r.canGoLive)
-      if (blocked.length > 0) {
-        return NextResponse.json({
-          error: 'Cannot switch to LIVE mode — gate checks failed',
-          blockedAgents: blocked.map(b => ({
-            tag: b.agentTag,
-            reasons: b.reasons,
-            metrics: b.metrics,
-          })),
-        }, { status: 403 })
-      }
+      return NextResponse.json({ error: 'Live trading not yet enabled' }, { status: 403 })
     }
 
     // Only allow SIMULATED ↔ PAPER freely; LIVE requires gate checks above
