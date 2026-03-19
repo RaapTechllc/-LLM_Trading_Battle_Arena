@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { generateTradeDecision, TradeDecision } from '@/lib/openrouter'
 import { TRADING_MODELS, ASSETS, getRarity, DIRECTIONS, LEVERAGE_OPTIONS } from '@/lib/constants'
+import { getServerSession } from '@/lib/auth'
 
 // Fallback random trade when OpenRouter unavailable
 function generateRandomTrade(asset: string, currentPrice: number): TradeDecision {
@@ -26,6 +27,11 @@ function generateRandomTrade(asset: string, currentPrice: number): TradeDecision
 }
 
 export async function POST() {
+  const session = await getServerSession()
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   const results: Array<{ model: string; success: boolean; card?: any; error?: string }> = []
 
   for (const model of TRADING_MODELS) {
@@ -34,10 +40,9 @@ export async function POST() {
       const cryptoAssets = ASSETS.filter(a => ['BTC', 'ETH', 'SOL'].includes(a.symbol))
       const asset = cryptoAssets[Math.floor(Math.random() * cryptoAssets.length)]
 
-      // Get current price
-      const priceRes = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/market/live-prices`)
-      const priceData = await priceRes.json()
-      const currentPrice = priceData.data?.[asset.symbol]?.price || 95000
+      // Get current price from fallback (live prices fetched client-side)
+      const FALLBACK_PRICES: Record<string, number> = { BTC: 95000, ETH: 3500, SOL: 250 }
+      const currentPrice = FALLBACK_PRICES[asset.symbol] || 95000
 
       // Generate trade decision (with fallback)
       let decision: TradeDecision

@@ -2,8 +2,14 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { generateTradeDecision, TradeDecision } from '@/lib/openrouter'
 import { getRarity } from '@/lib/constants'
+import { getServerSession } from '@/lib/auth'
 
 export async function POST(request: NextRequest) {
+  const session = await getServerSession()
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   try {
     const { model1Name, model2Name, asset, currentPrice } = await request.json()
 

@@ -1,8 +1,7 @@
-import { PrismaClient, Prisma } from "@prisma/client"
+import { Prisma } from "@prisma/client"
 import { RiskManager } from "./RiskManager"
 import { AuditLogger } from "./AuditLogger"
-
-const prisma = new PrismaClient()
+import { prisma } from "@/lib/prisma"
 
 export interface OrderParams {
   symbol: string

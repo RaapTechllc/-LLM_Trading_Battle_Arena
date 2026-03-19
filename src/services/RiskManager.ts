@@ -1,7 +1,6 @@
-import { PrismaClient, Prisma } from "@prisma/client"
+import { Prisma } from "@prisma/client"
 import { OrderParams } from "./TradingService"
-
-const prisma = new PrismaClient()
+import { prisma } from "@/lib/prisma"
 
 export interface RiskCheckResult {
   approved: boolean

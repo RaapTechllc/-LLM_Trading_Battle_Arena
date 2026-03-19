@@ -76,18 +76,18 @@ export async function GET() {
     // Format data for our UI
     const formattedData = {
       BTC: {
-        price: data.bitcoin.current_price,
-        change24h: data.bitcoin.price_change_percentage_24h,
+        price: data.bitcoin.usd,
+        change24h: data.bitcoin.usd_24h_change,
         symbol: 'BTC'
       },
       ETH: {
-        price: data.ethereum.current_price,
-        change24h: data.ethereum.price_change_percentage_24h,
+        price: data.ethereum.usd,
+        change24h: data.ethereum.usd_24h_change,
         symbol: 'ETH'
       },
       SOL: {
-        price: data.solana.current_price,
-        change24h: data.solana.price_change_percentage_24h,
+        price: data.solana.usd,
+        change24h: data.solana.usd_24h_change,
         symbol: 'SOL'
       }
     }

@@ -1,11 +1,13 @@
 import { NextResponse } from 'next/server'
 import { runArenaRound } from '@/lib/arena-orchestrator'
+import crypto from 'crypto'
 
 export async function POST(req: Request) {
   // Internal-only auth: shared secret prevents unauthenticated round triggering
   const token = req.headers.get('x-arena-token')
   const expected = process.env.ARENA_API_TOKEN
-  if (!expected || token !== expected) {
+  if (!expected || !token ||
+      !crypto.timingSafeEqual(Buffer.from(token), Buffer.from(expected))) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

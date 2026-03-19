@@ -1,8 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { generateTradeDecision, MODEL_MAP } from '@/lib/openrouter'
 import { rateLimitAsync } from '@/lib/rate-limit'
+import { getServerSession } from '@/lib/auth'
 
 export async function POST(request: NextRequest) {
+  const session = await getServerSession()
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   const ip = request.headers.get('x-forwarded-for') || 'anonymous'
   const { allowed, retryAfter } = await rateLimitAsync(ip)
   

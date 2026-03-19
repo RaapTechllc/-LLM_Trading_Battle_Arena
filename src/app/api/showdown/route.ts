@@ -1,7 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { getServerSession } from '@/lib/auth'
 
 export async function POST(request: NextRequest) {
+  const session = await getServerSession()
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   try {
     const body = await request.json()
     const { model1Name, model2Name } = body
