@@ -37,6 +37,7 @@ class SoundManager {
 
       oscillator.start(this.audioContext.currentTime);
       oscillator.stop(this.audioContext.currentTime + duration);
+      oscillator.onended = () => { oscillator.disconnect(); gainNode.disconnect(); };
     } catch (error) {
       // Audio playback failed
       this.enabled = false;

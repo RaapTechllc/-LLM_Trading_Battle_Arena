@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { DemoTimer } from '@/lib/performance'
+import { DemoTimer } from '@/lib/performance-server'
 
 interface DemoStep {
   id: string

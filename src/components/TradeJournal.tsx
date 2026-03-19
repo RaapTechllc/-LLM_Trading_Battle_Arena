@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { TRADING_MODELS, ASSETS, Rarity } from '@/lib/constants'
 import { TradeCard } from '@/components/cards/TradeCard'
-import { PerformanceMonitor } from '@/lib/performance'
+import { PerformanceMonitor } from '@/lib/performance-client'
 
 interface TradeCardData {
   id: string

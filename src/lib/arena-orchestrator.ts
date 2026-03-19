@@ -60,10 +60,8 @@ function readAgentSessionKey(tag: string): string | null {
   // Never in DB, never in environment (prevents DB read = session hijack)
   try {
     const keyFile = path.join(
-      process.env.HOME ?? '/root',
-      '.secrets', 'arena',
-      `${tag.toLowerCase().replace(/[^a-z0-9]/g, '')}.key`
-    )
+      process.env.ARENA_SECRETS_DIR ?? path.join(process.env.HOME ?? '/root', '.secrets', 'arena'),
+    `${tag.toLowerCase().replace(/[^a-z0-9]/g, '')}.key`)
     if (fs.existsSync(keyFile)) {
       return fs.readFileSync(keyFile, 'utf8').trim()
     }
@@ -248,8 +246,8 @@ function checkRiskLimits(
 
 async function executeTrade(
   tradingMode: string,
-  entry: any,
-  round: any,
+  entry: { id: string; currentBalance: number },
+  round: { id: string },
   decision: TradeDecision,
   marketData: MarketData,
   riskPassed: boolean

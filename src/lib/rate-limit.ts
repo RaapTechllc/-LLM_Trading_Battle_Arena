@@ -7,6 +7,22 @@ const MAX_REQUESTS = 10
 // In-memory fallback for local development
 const localRequests = new Map<string, number[]>()
 
+// Periodic cleanup every 60s to prevent memory leaks
+if (typeof globalThis !== 'undefined') {
+  setInterval(() => {
+    const now = Date.now()
+    const windowStart = now - WINDOW_MS
+    for (const [key, times] of localRequests.entries()) {
+      const recent = times.filter(t => t > windowStart)
+      if (recent.length === 0) {
+        localRequests.delete(key)
+      } else {
+        localRequests.set(key, recent)
+      }
+    }
+  }, 60_000)
+}
+
 interface RateLimitResult {
   allowed: boolean
   retryAfter?: number
