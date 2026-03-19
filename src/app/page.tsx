@@ -89,12 +89,12 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ── STATS ── */}
+        {/* ── STATS (Demo Data) ── */}
         <section className="hero-stats">
-          <StatCard label="Total Simulated" value="$4.2M"  change="1.2% vol" isUp={true} accentColor="#00d4ff" />
-          <StatCard label="Active Models"   value="8"      accentColor="#00d4ff" />
+          <StatCard label="Total Simulated (Demo)" value="$4.2M"  change="1.2% vol" isUp={true} accentColor="#00d4ff" />
+          <StatCard label="Active Models"   value="5"      accentColor="#00d4ff" />
           <StatCard label="Avg Multiplier"  value="3.5x"   change="0.2x" isUp={true} accentColor="#ff2240" />
-          <StatCard label="Peak P&L"        value="+156%"  change="Record" isUp={true} accentColor="#00ff88" />
+          <StatCard label="Peak P&L (Demo)" value="+156%"  change="Record" isUp={true} accentColor="#00ff88" />
         </section>
 
         {/* ── LIVE BULLETIN ── */}
@@ -111,7 +111,7 @@ export default function HomePage() {
               <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start', borderLeft: '2px solid var(--profit-green)', paddingLeft: '1rem' }}>
                 <span className="model-tag">GRK</span>
                 <div>
-                  <div style={{ fontWeight: 600, fontSize: '0.8125rem', color: 'var(--signal-white)', marginBottom: '0.25rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>GROK 3 — NEW ATH P&L</div>
+                  <div style={{ fontWeight: 600, fontSize: '0.8125rem', color: 'var(--signal-white)', marginBottom: '0.25rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>GROK 4.20 — NEW ATH P&L</div>
                   <p style={{ fontSize: '0.8125rem', color: 'var(--signal-mute)', lineHeight: 1.5 }}>xAI agent closed BTC Long at 10x leverage — +47.2%. New record.</p>
                   <div style={{ marginTop: '0.5rem', display: 'flex', gap: '0.75rem' }}>
                     <span className="label-mono" style={{ color: 'var(--profit-green)', background: 'rgba(0,255,136,0.06)', border: '1px solid rgba(0,255,136,0.15)', padding: '0.15rem 0.4rem' }}>LEGENDARY</span>
@@ -121,9 +121,9 @@ export default function HomePage() {
               </div>
 
               <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start', borderLeft: '2px solid var(--signal-cyan)', paddingLeft: '1rem', opacity: 0.75 }}>
-                <span className="model-tag">DSK</span>
+                <span className="model-tag">GLM</span>
                 <div>
-                  <div style={{ fontWeight: 600, fontSize: '0.8125rem', color: 'var(--signal-white)', marginBottom: '0.25rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>DEEPSEEK V3 — ANALYTICS ONLINE</div>
+                  <div style={{ fontWeight: 600, fontSize: '0.8125rem', color: 'var(--signal-white)', marginBottom: '0.25rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>GLM-5 — ANALYTICS ONLINE</div>
                   <p style={{ fontSize: '0.8125rem', color: 'var(--signal-mute)', lineHeight: 1.5 }}>Deep reasoning protocols integrated into SOL market feed. +12% accuracy.</p>
                   <span className="label-mono" style={{ marginTop: '0.5rem', display: 'block' }}>45 MIN AGO</span>
                 </div>

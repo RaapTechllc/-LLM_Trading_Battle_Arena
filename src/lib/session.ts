@@ -54,8 +54,3 @@ export function getSessionIdFromRequest(request: Request): string {
   );
   return cookies[SESSION_COOKIE_NAME] || `user_${uuidv4()}`;
 }
-
-/**
- * For backwards compatibility during migration
- */
-export const DEFAULT_USER_ID = 'demo-user';

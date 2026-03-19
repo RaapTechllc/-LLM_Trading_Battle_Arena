@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client';
-import { TRADING_MODELS, SAMPLE_TRADES, getRarity } from '../src/lib/trading-constants';
+import { TRADING_MODELS, SAMPLE_TRADES, getRarity } from '../src/lib/constants';
 
 const prisma = new PrismaClient();
 

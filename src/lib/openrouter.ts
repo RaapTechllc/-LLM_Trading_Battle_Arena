@@ -1,5 +1,5 @@
 // OpenRouter LLM Integration — Elite Model Roster
-// MUST stay in sync with constants.ts and trading-constants.ts
+// MODEL_MAP keys must match TRADING_MODELS names in constants.ts
 
 export const MODEL_MAP: Record<string, string> = {
   "GPT-5.4":            "openai/gpt-5.4",
